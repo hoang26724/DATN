@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The Raspberry Pi dashboard serves plain HTTP on the campus network, which
+  Android blocks by default from API 28 onwards. Cleartext is allowed for that
+  one host only: base-config keeps it off everywhere else, so the app cannot
+  silently downgrade a request to an unrelated server.
+
+  Changing the Pi's address means changing <domain> here as well as
+  kPiCameraHost in lib/pi_camera_transport.dart.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false" />
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">10.193.56.100</domain>
+    </domain-config>
+</network-security-config>

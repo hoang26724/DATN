@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Single-env PlatformIO firmware project: ESP32 (DOIT ESP32 DEVKIT V1) driving four DC motors through **two** L298N modules, now **Bluetooth**-commanded from the Flutter app in `../app_control_robot/`. There is no git repository, no CI, no linter, no formatter, and no typecheck step.
+Single-env PlatformIO firmware project: ESP32 (DOIT ESP32 DEVKIT V1) driving four DC motors through **two** L298N modules, now **Bluetooth**-commanded from the Flutter app in `../flutter/` (the Dart *package* is named `app_control_robot`, but the directory is `flutter/` — there is no `app_control_robot/` folder). There is no CI, no linter, no formatter, and no typecheck step. The git repo is at the repo root, one level up.
 
 **There is no WiFi in this firmware.** `WiFi.h`, the TCP server, the DHCP retry logic, and `src/wifi_config.h` are all gone. Do not reintroduce them; the phone and the robot never share a network.
 
@@ -15,9 +15,9 @@ One ASCII char per command: `F` forward, `B` backward, `L` left (pivot), `R` rig
 Watchdog rules, all of which must stay in sync with `RobotLink` on the app side:
 - **Command timeout.** `COMMAND_TIMEOUT_MS` (600 ms) with no byte received stops the motors. The app resends the held command every 200 ms, so this is the primary "app crashed / phone locked / phone walked out of range" safety net.
 - **Link loss.** `serialBt.hasClient()` going false stops the motors immediately, before anything else in `loop()`.
-- `motorsRunning` gates the log line only; the stop itself is unconditional, so calling the stop paths when already stopped is safe.
+- `stopForSafety()` itself starts with `if (!motorsRunning) return;`, so both the stop and the `[safety]` log line happen only on a real transition. Calling it when already stopped is a cheap no-op.
 
-Changing the command characters here requires editing `RobotLink`/`ControlPage` in `../app_control_robot/lib/` too.
+Changing the command characters here requires editing `RobotLink`/`ControlPage` in `../flutter/lib/` too.
 
 ## Commands
 
@@ -52,7 +52,7 @@ End-to-end bring-up order (all steps need the hardware):
 
 - `src/main.cpp` — motors, command parsing, watchdog, and the Bluetooth peripheral. Nothing else compiles into the firmware except `src/bluetooth_config.h`.
 - `src/bluetooth_config.h` — device name and pairing PIN. The only "credentials" left.
-- `include/`, `lib/`, `test/` — stock empty PlatformIO placeholders (README only). `test/` has no `test_*` directories, so `pio test` errors with 0 cases. Don't report tests as passing. **The protocol has no automated test on this side either**; `../app_control_robot/test/robot_link_test.dart` checks the Dart side against a fake transport, but nothing verifies the ESP32 actually parses those bytes.
+- `include/`, `lib/`, `test/` — stock empty PlatformIO placeholders (README only). `test/` has no `test_*` directories, so `pio test` errors with 0 cases. Don't report tests as passing. **The protocol has no automated test on this side either**; `../flutter/test/robot_link_test.dart` checks the Dart side against a fake transport, but nothing verifies the ESP32 actually parses those bytes.
 - `lib_deps` is absent from `platformio.ini`. `BluetoothSerial.h` comes from the Arduino core, no third-party libraries are needed.
 
 **There is no way to verify behavior without the physical board.** A successful `pio run` proves the code compiles, nothing about whether the phone pairs, the socket opens, the watchdog fires, or the wheels turn the right way.

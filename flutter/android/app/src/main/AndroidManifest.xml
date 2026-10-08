@@ -1,7 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-    <!-- Classic Bluetooth (RFCOMM/SPP) to the ESP32. No INTERNET permission:
-         the robot link is a Bluetooth socket, not a TCP one. -->
+    <!-- Camera dashboard from the Raspberry Pi over plain HTTP. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Classic Bluetooth (RFCOMM/SPP) to the ESP32. -->
     <uses-permission android:name="android.permission.BLUETOOTH"
         android:maxSdkVersion="30" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"
@@ -23,7 +24,8 @@
     <application
         android:label="app_control_robot"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:networkSecurityConfig="@xml/network_security_config">
         <activity
             android:name=".MainActivity"
             android:exported="true"

@@ -141,8 +141,10 @@ class RobotLink extends ChangeNotifier {
   /// Stops the robot and stops the keep-alive timer. Call this from every
   /// gesture that ends a press (lift, drag-off, cancel) and on app pause.
   ///
-  /// Sends `S` even when no command was held, so the emergency stop button is
-  /// never a no-op while the link is up.
+  /// There is no STOP button on the pad, so this is the only thing that ever
+  /// sends `S`: it therefore writes it unconditionally, and a release with
+  /// nothing held is still a real stop rather than a no-op. Every entry point
+  /// that can start a command has to end in a call to this.
   void release() {
     _stopKeepAlive();
     _heldCommand = null;

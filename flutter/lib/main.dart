@@ -3,7 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'bluetooth_transport.dart';
+import 'camera_panel.dart';
 import 'gamepad_controls.dart';
+import 'pi_camera_link.dart';
+import 'pi_camera_transport.dart';
 import 'robot_link.dart';
 
 void main() {
@@ -32,11 +35,15 @@ class MyApp extends StatelessWidget {
 }
 
 class ControlPage extends StatefulWidget {
-  const ControlPage({super.key, this.link});
+  const ControlPage({super.key, this.link, this.camera});
 
   /// Injected by tests so the UI can be driven against a fake radio. The app
   /// itself leaves it null and gets a real [MethodChannelTransport].
   final RobotLink? link;
+
+  /// Injected by tests so the camera panel never opens a socket. The app itself
+  /// leaves it null and gets a real [HttpPiCameraTransport] to the Pi.
+  final PiCameraLink? camera;
 
   @override
   State<ControlPage> createState() => _ControlPageState();
@@ -44,20 +51,24 @@ class ControlPage extends StatefulWidget {
 
 class _ControlPageState extends State<ControlPage> with WidgetsBindingObserver {
   /// Fixed size of the control pad, scaled to fit whatever the screen gives us.
-  static const double _dialWidth = 300;
-  static const double _dialHeight = 216;
+  static const double _dialWidth = 320;
+  static const double _dialHeight = 272;
 
   late final RobotLink _link = widget.link ?? RobotLink(MethodChannelTransport());
+  late final PiCameraLink _camera =
+      widget.camera ?? PiCameraLink(HttpPiCameraTransport());
 
-  /// Only dispose a link this page created. An injected one belongs to whoever
+  /// Only dispose what this page created. An injected one belongs to whoever
   /// made it — tests reuse it across cases.
   bool get _ownsLink => widget.link == null;
+  bool get _ownsCamera => widget.camera == null;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _link.addListener(_onLinkChanged);
+    unawaited(_camera.start());
   }
 
   @override
@@ -65,6 +76,9 @@ class _ControlPageState extends State<ControlPage> with WidgetsBindingObserver {
     _link.removeListener(_onLinkChanged);
     if (_ownsLink) {
       _link.dispose();
+    }
+    if (_ownsCamera) {
+      _camera.dispose();
     }
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
@@ -76,7 +90,13 @@ class _ControlPageState extends State<ControlPage> with WidgetsBindingObserver {
     // motors running.
     if (state != AppLifecycleState.resumed) {
       _link.release();
+      // An Android socket that was parked while the app was away comes back
+      // wedged more often than not, and a wedged MJPEG socket looks exactly
+      // like a frozen picture. Drop it and open a fresh one on resume.
+      unawaited(_camera.stop());
+      return;
     }
+    unawaited(_camera.start());
   }
 
   void _onLinkChanged() {
@@ -143,9 +163,26 @@ class _ControlPageState extends State<ControlPage> with WidgetsBindingObserver {
               onPick: _openDevicePicker,
               onDisconnect: _disconnect,
             ),
+            // Camera above the pad, both sharing the leftover height. The pad
+            // keeps its own aspect inside a FittedBox, so giving the camera a
+            // fixed share instead of letting it grow keeps the thumb zones at a
+            // predictable size.
             Expanded(
+              flex: 5,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                child: Center(
+                  child: AspectRatio(
+                    aspectRatio: 4 / 3,
+                    child: CameraPanel(feed: _camera),
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              flex: 4,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                 // A fixed canvas scaled down to fit. The pad keeps its shape
                 // and its touch targets stay predictable on any screen, instead
                 // of reflowing into something thumb-unfriendly on a short one.
@@ -158,36 +195,15 @@ class _ControlPageState extends State<ControlPage> with WidgetsBindingObserver {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        // Left thumb: pivot on the spot.
+                        // Left thumb: pivot on the spot. Same icons as the
+                        // drive pair so all four read as one set.
                         _DirectionCluster(
                           enabled: connected,
                           onPressed: _press,
                           onReleased: _release,
                           buttons: const [
-                            (command: 'L', label: 'Trái', icon: Icons.turn_left),
-                            (command: 'R', label: 'Phải', icon: Icons.turn_right),
-                          ],
-                        ),
-                        // Centre: stop and link. Kept between the two thumb
-                        // zones so neither hand can cover it.
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            // Always live: a stop that needs a connection is
-                            // not a safety net.
-                            GamepadActionButton(
-                              label: 'STOP',
-                              icon: Icons.stop,
-                              color: theme.colorScheme.error,
-                              onPressed: _release,
-                            ),
-                            const SizedBox(height: 24),
-                            GamepadActionButton(
-                              label: 'BT',
-                              icon: Icons.bluetooth,
-                              color: theme.colorScheme.tertiary,
-                              onPressed: _openDevicePicker,
-                            ),
+                            (command: 'L', label: 'Trái', icon: Icons.keyboard_arrow_left),
+                            (command: 'R', label: 'Phải', icon: Icons.keyboard_arrow_right),
                           ],
                         ),
                         // Right thumb: drive.
@@ -327,14 +343,6 @@ class _ConnectionStrip extends StatelessWidget {
                 message,
                 style: theme.textTheme.bodySmall
                     ?.copyWith(color: scheme.onSurfaceVariant),
-              ),
-            )
-          else if (!connected)
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Text(
-                'Mở Cài đặt Bluetooth, ghép nối ESP32_ROBOT (mã 1234), rồi bấm Robot.',
-                style: theme.textTheme.bodySmall,
               ),
             ),
         ],

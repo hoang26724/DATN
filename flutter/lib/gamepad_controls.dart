@@ -20,14 +20,16 @@ class DirectionButton extends StatefulWidget {
     required this.enabled,
     required this.onPressed,
     required this.onReleased,
-    this.size = 100,
+    this.size = 128,
     super.key,
   });
 
   /// The single ASCII command this button sends: `F`, `B`, `L` or `R`.
   final String command;
 
-  /// Vietnamese name shown under the icon, e.g. `Tiến`.
+  /// Vietnamese name of the command, e.g. `Tiến`. The button shows an icon
+  /// only — the arrow already says which way it goes — so this is handed to
+  /// accessibility services instead of being painted.
   final String label;
 
   final IconData icon;
@@ -78,34 +80,24 @@ class _DirectionButtonState extends State<DirectionButton> {
             ? scheme.onPrimary
             : scheme.onSurface;
 
-    return Listener(
-      behavior: HitTestBehavior.opaque,
-      onPointerDown: widget.enabled ? (_) => _start() : null,
-      onPointerUp: widget.enabled ? (_) => _end() : null,
-      onPointerCancel: widget.enabled ? (_) => _end() : null,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 80),
-        width: widget.size,
-        height: widget.size,
-        decoration: BoxDecoration(
-          color: fill,
-          borderRadius: BorderRadius.circular(widget.size * 0.26),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(widget.icon, size: widget.size * 0.42, color: foreground),
-            const SizedBox(height: 2),
-            Text(
-              widget.label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: foreground,
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-          ],
+    return Semantics(
+      button: true,
+      label: widget.label,
+      child: Listener(
+        behavior: HitTestBehavior.opaque,
+        onPointerDown: widget.enabled ? (_) => _start() : null,
+        onPointerUp: widget.enabled ? (_) => _end() : null,
+        onPointerCancel: widget.enabled ? (_) => _end() : null,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 80),
+          width: widget.size,
+          height: widget.size,
+          decoration: BoxDecoration(
+            color: fill,
+            borderRadius: BorderRadius.circular(widget.size * 0.26),
+          ),
+          alignment: Alignment.center,
+          child: Icon(widget.icon, size: widget.size * 0.46, color: foreground),
         ),
       ),
     );

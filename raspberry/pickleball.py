@@ -3,6 +3,11 @@
 Camera AI IMX500 + Pickleball NCNN + RPLIDAR web viewer cho Raspberry Pi.
 Chay: python3 pickleball.py
 Xem: http://<IP_CUA_PI>:8000/
+
+Cac endpoint (Flutter app dung cung may chay nay):
+  /stream.mjpg  - multipart MJPEG, khung moi moi, tu dong dong neu camera treo
+  /stats        - JSON so nguoi, so bong, FPS
+  /lidar_data   - JSON man hinh radar LIDAR
 """
 
 import json
@@ -33,6 +38,10 @@ MAX_DIST_MM = 6000
 MAX_DIST_M = MAX_DIST_MM / 1000
 HTTP_PORT = 8000
 JPEG_QUALITY = 80
+# How long /stream.mjpg waits for a new camera frame before hanging up. Without
+# this a client whose camera worker died blocks on the Condition forever and only
+# ever sees a frozen picture; closing the response lets it reconnect instead.
+STREAM_STALL_TIMEOUT_S = 8.0
 
 MODEL_PATH = '/usr/share/imx500-models/imx500_network_ssd_mobilenetv2_fpnlite_320x320_pp.rpk'
 OBJ_THRESHOLD = 0.55
@@ -116,6 +125,7 @@ h1 { margin: 6px 0 0; font-size: clamp(26px, 4vw, 42px); letter-spacing: -.04em;
 .legend i { width: 8px; height: 8px; border-radius: 50%; }
 .legend .person i { background: var(--red); box-shadow: 0 0 9px rgba(255,107,107,.8); }
 .legend .ball i { background: var(--yellow); box-shadow: 0 0 9px rgba(255,211,78,.8); }
+.legend b { min-width: 22px; padding: 2px 8px; border-radius: 7px; color: #06131f; background: linear-gradient(135deg, var(--cyan), #8bf4d0); font-size: 13px; font-weight: 800; text-align: center; }
 .lidar-body { padding: 16px 18px 20px; }
 .range-row { display: flex; justify-content: space-between; align-items: center; gap: 14px; margin-bottom: 12px; color: var(--muted); font-size: 12px; }
 .range-row strong { color: var(--text); font-size: 15px; }
@@ -163,8 +173,8 @@ h1 { margin: 6px 0 0; font-size: clamp(26px, 4vw, 42px); letter-spacing: -.04em;
       <div class="camera-body">
         <div class="camera-frame"><img src="stream.mjpg" width="640" height="480" alt="Camera AI stream"></div>
         <div class="legend">
-          <span class="person"><i></i>Nguoi</span>
-          <span class="ball"><i></i>Pickleball</span>
+          <span class="person"><i></i>Nguoi <b id="stat-person">0</b></span>
+          <span class="ball"><i></i>Pickleball <b id="stat-ball">0</b></span>
         </div>
       </div>
     </article>
@@ -190,6 +200,8 @@ const CY = 280;
 const MAXR = 240;
 const MAXDIST = __MAX_DIST_MM__;
 const observedRange = document.getElementById('observed-range');
+const statPerson = document.getElementById('stat-person');
+const statBall = document.getElementById('stat-ball');
 
 function mixColor(first, second, amount) {
   return `rgb(${Math.round(first[0] + (second[0] - first[0]) * amount)}, ${Math.round(first[1] + (second[1] - first[1]) * amount)}, ${Math.round(first[2] + (second[2] - first[2]) * amount)})`;
@@ -277,8 +289,27 @@ async function updateLidar() {
   window.setTimeout(updateLidar, 200);
 }
 
+// So nguoi va so bong: nam ngay duoi anh trong bang chu thay vi nen len
+// chinh khung hinh, de doc khong can nhin kem. /stats cung cap ca FPS, nhung
+// FPS van duoc ve thang tren anh boi draw_stats.
+async function updateStats() {
+  try {
+    const response = await fetch('/stats', {cache: 'no-store'});
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    const stats = await response.json();
+    statPerson.textContent = Number(stats.person) || 0;
+    statBall.textContent = Number(stats.pickleball) || 0;
+  } catch (error) {
+    console.error(error);
+  }
+  window.setTimeout(updateStats, 500);
+}
+
 drawGrid();
 updateLidar();
+updateStats();
 </script>
 </body>
 </html>
@@ -288,8 +319,20 @@ updateLidar();
 
 
 class StreamingOutput:
+    """Latest JPEG plus the numbers belonging to it.
+
+    Only the FPS is burned into the picture. /stats serves person count,
+    pickleball count and FPS as JSON, which is where both the web page (legend
+    under the frame) and the Flutter app read them from.
+    """
+
     def __init__(self):
         self.frame = None
+        self.person_count = 0
+        self.pickleball_count = 0
+        self.fps = 0.0
+        self.sequence = 0
+        self.updated_at = 0.0
         self.condition = Condition()
 
 
@@ -334,14 +377,14 @@ def draw_detection(frame, box, label, confidence, color):
     )
 
 
-def draw_stats(frame, person_count, pickleball_count, fps):
+def draw_stats(frame, fps):
+    # Chi FPS ve tren anh. So nguoi va so bong de o bang chu ben duoi anh tren
+    # trang web: chu de doc nho hon, de doc hon va khong che khung hinh.
     panel = frame.copy()
-    cv2.rectangle(panel, (10, 10), (300, 96), (12, 22, 36), -1)
+    cv2.rectangle(panel, (10, 10), (170, 50), (12, 22, 36), -1)
     cv2.addWeighted(panel, 0.78, frame, 0.22, 0, frame)
     font = cv2.FONT_HERSHEY_SIMPLEX
-    cv2.putText(frame, f'Nguoi: {person_count}', (24, 35), font, 0.62, (255, 255, 255), 2, cv2.LINE_AA)
-    cv2.putText(frame, f'Bong pickleball: {pickleball_count}', (24, 61), font, 0.62, (255, 255, 255), 2, cv2.LINE_AA)
-    cv2.putText(frame, f'FPS: {fps:.1f}', (24, 87), font, 0.58, (94, 231, 247), 2, cv2.LINE_AA)
+    cv2.putText(frame, f'FPS: {fps:.1f}', (24, 38), font, 0.58, (94, 231, 247), 2, cv2.LINE_AA)
 
 
 class NCNNPickleballDetector:
@@ -565,7 +608,7 @@ def camera_worker(pickleball_detector):
                 frame_count = 0
                 fps_start_time = time.time()
 
-            draw_stats(frame, person_count, pickleball_count, fps)
+            draw_stats(frame, fps)
 
             ok, jpeg = cv2.imencode(
                 '.jpg',
@@ -575,6 +618,11 @@ def camera_worker(pickleball_detector):
             if ok:
                 with output.condition:
                     output.frame = jpeg.tobytes()
+                    output.person_count = person_count
+                    output.pickleball_count = pickleball_count
+                    output.fps = fps
+                    output.sequence += 1
+                    output.updated_at = time.time()
                     output.condition.notify_all()
         except Exception as exc:
             logging.warning('Loi xu ly camera: %s', exc)
@@ -629,10 +677,20 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
             self.send_header('Pragma', 'no-cache')
             self.send_header('Content-Type', 'multipart/x-mixed-replace; boundary=FRAME')
             self.end_headers()
+            last_sequence = -1
             try:
                 while True:
                     with output.condition:
-                        output.condition.wait()
+                        # Wait for a *new* frame, not just a wake-up: repeating
+                        # the previous JPEG would turn a dead camera into a
+                        # silently frozen picture.
+                        while output.sequence == last_sequence:
+                            if not output.condition.wait(timeout=STREAM_STALL_TIMEOUT_S):
+                                raise TimeoutError(
+                                    'camera khong tao khung moi trong %.0fs'
+                                    % STREAM_STALL_TIMEOUT_S
+                                )
+                        last_sequence = output.sequence
                         frame = output.frame
                     if frame is None:
                         continue
@@ -642,6 +700,8 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
                     self.end_headers()
                     self.wfile.write(frame)
                     self.wfile.write(b'\r\n')
+            except TimeoutError as exc:
+                logging.warning('Dong stream camera: %s', exc)
             except Exception as exc:
                 logging.warning('Client camera ngat: %s', exc)
         elif self.path == '/lidar_data':
@@ -649,6 +709,29 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
                 data = json.dumps(lidar_points).encode('utf-8')
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
+            self.send_header('Content-Length', str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+        elif self.path == '/stats':
+            # Cac so do doc tu khung moi nhat: FPS (cung duoc ve tren anh) va
+            # so nguoi, so bong (trang web va app Flutter doc o day).
+            with output.condition:
+                data = json.dumps(
+                    {
+                        'person': output.person_count,
+                        'pickleball': output.pickleball_count,
+                        'fps': round(output.fps, 1),
+                        'sequence': output.sequence,
+                        'frameAge': (
+                            round(time.time() - output.updated_at, 2)
+                            if output.updated_at
+                            else None
+                        ),
+                    }
+                ).encode('utf-8')
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Cache-Control', 'no-store')
             self.send_header('Content-Length', str(len(data)))
             self.end_headers()
             self.wfile.write(data)
