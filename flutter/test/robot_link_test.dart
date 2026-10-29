@@ -89,7 +89,10 @@ class FakeTransport implements RobotTransport {
 }
 
 void main() {
-  const robot = BluetoothDevice(address: 'AA:BB:CC:DD:EE:FF', name: 'ESP32_ROBOT');
+  const robot = BluetoothDevice(
+    address: 'AA:BB:CC:DD:EE:FF',
+    name: 'ESP32_ROBOT',
+  );
 
   late FakeTransport transport;
   late RobotLink link;
@@ -131,16 +134,18 @@ void main() {
     link.hold('F');
     await Future<void>.delayed(Duration(milliseconds: 60));
 
-    expect(transport.written.join(), 'F\n');
+    // connect() pushes the two speed sliders before any driving starts.
+    expect(transport.commands, ['f100', 'r50', 'F']);
     expect(link.activeCommand, 'F');
   });
 
-  test('resends the held command so the firmware watchdog stays fed',
-      () async {
+  test('resends the held command so the firmware watchdog stays fed', () async {
     // Short keep-alive so the test observes repeats quickly.
     final fastTransport = FakeTransport();
-    final fastLink =
-        RobotLink(fastTransport, keepAliveInterval: const Duration(milliseconds: 20));
+    final fastLink = RobotLink(
+      fastTransport,
+      keepAliveInterval: const Duration(milliseconds: 20),
+    );
     addTearDown(() async {
       fastLink.dispose();
       await fastTransport.close();
@@ -152,7 +157,9 @@ void main() {
     fastLink.release();
     await Future<void>.delayed(Duration(milliseconds: 60));
 
-    final commands = fastTransport.commands;
+    final commands = fastTransport.commands
+        .where((c) => c != 'f100' && c != 'r50')
+        .toList();
     expect(commands.where((c) => c == 'L').length, greaterThan(1));
     expect(commands.last, 'S');
     expect(
@@ -169,20 +176,22 @@ void main() {
     link.hold('R');
     await Future<void>.delayed(Duration(milliseconds: 60));
 
-    expect(transport.commands, ['F', 'R']);
+    expect(transport.commands.sublist(2), ['F', 'R']);
     expect(link.activeCommand, 'R');
   });
 
-  test('holding the same direction twice does not duplicate the command',
-      () async {
-    await link.connect(robot);
+  test(
+    'holding the same direction twice does not duplicate the command',
+    () async {
+      await link.connect(robot);
 
-    link.hold('B');
-    link.hold('B');
-    await Future<void>.delayed(Duration(milliseconds: 60));
+      link.hold('B');
+      link.hold('B');
+      await Future<void>.delayed(Duration(milliseconds: 60));
 
-    expect(transport.commands, ['B']);
-  });
+      expect(transport.commands.sublist(2), ['B']);
+    },
+  );
 
   test('release always sends stop, even with nothing held', () async {
     await link.connect(robot);
@@ -190,7 +199,7 @@ void main() {
     link.release();
     await Future<void>.delayed(Duration(milliseconds: 60));
 
-    expect(transport.commands, ['S']);
+    expect(transport.commands.last, 'S');
     expect(link.activeCommand, isNull);
   });
 
@@ -213,7 +222,9 @@ void main() {
     expect(link.isConnected, isFalse);
     expect(link.state, RobotLinkState.disconnected);
     expect(link.deviceName, isNull);
-    expect(link.lastError, 'Robot đã ngắt kết nối.');
+    // The raw link-loss reason is not surfaced: the status label says
+    // "Chưa kết nối" instead.
+    expect(link.lastError, isEmpty);
   });
 
   test('a hang-up mid-hold cancels the keep-alive', () async {
@@ -231,28 +242,34 @@ void main() {
     expect(link.activeCommand, isNull);
   });
 
-  test('connect throws and stays disconnected when the robot refuses',
-      () async {
-    transport.connectError = const BluetoothUnavailable('Robot không phản hồi.');
-    addTearDown(() => expect(link.isConnected, isFalse));
+  test(
+    'connect throws and stays disconnected when the robot refuses',
+    () async {
+      transport.connectError = const BluetoothUnavailable(
+        'Robot không phản hồi.',
+      );
+      addTearDown(() => expect(link.isConnected, isFalse));
 
-    await expectLater(
-      link.connect(robot),
-      throwsA(isA<BluetoothUnavailable>()),
-    );
+      await expectLater(
+        link.connect(robot),
+        throwsA(isA<BluetoothUnavailable>()),
+      );
 
-    expect(link.isConnected, isFalse);
-    expect(link.state, RobotLinkState.disconnected);
-    expect(link.lastError, 'Robot không phản hồi.');
-  });
+      expect(link.isConnected, isFalse);
+      expect(link.state, RobotLinkState.disconnected);
+      expect(link.lastError, 'Robot không phản hồi.');
+    },
+  );
 
-  test('ensureReady and the device list come straight from the transport',
-      () async {
-    transport.paired = [robot];
+  test(
+    'ensureReady and the device list come straight from the transport',
+    () async {
+      transport.paired = [robot];
 
-    await link.ensureReady();
-    expect(await link.pairedDevices(), [robot]);
-  });
+      await link.ensureReady();
+      expect(await link.pairedDevices(), [robot]);
+    },
+  );
 
   test('surfaces text sent by the robot', () async {
     await link.connect(robot);
@@ -278,4 +295,187 @@ void main() {
     await Future<void>.delayed(const Duration(milliseconds: 120));
     expect(transport.written.length, count);
   });
+
+  test('starts suction at 100% and drive at 50%', () async {
+    await link.connect(robot);
+    expect(link.frontSpeed, 100);
+    expect(link.rearSpeed, 50);
+    expect(transport.commands, ['f100', 'r50']);
+
+    link.holdSpeed(front: true, delta: -10);
+    link.releaseSpeed();
+    await Future<void>.delayed(const Duration(milliseconds: 30));
+
+    expect(link.frontSpeed, 90);
+    expect(link.rearSpeed, 50);
+    expect(transport.commands.last, 'f90');
+  });
+
+  test('speed clamps at the ends of the range', () async {
+    await link.connect(robot);
+
+    for (var i = 0; i < 15; i++) {
+      link.holdSpeed(front: true, delta: -10);
+      link.releaseSpeed();
+    }
+    for (var i = 0; i < 15; i++) {
+      link.holdSpeed(front: false, delta: 10);
+      link.releaseSpeed();
+    }
+    await Future<void>.delayed(const Duration(milliseconds: 30));
+
+    expect(link.frontSpeed, 0);
+    expect(link.rearSpeed, 100);
+    expect(transport.commands.last, 'r100');
+  });
+
+  test('auto mode sends A then M and drops a held direction', () async {
+    await link.connect(robot);
+    link.hold('F');
+    await Future<void>.delayed(const Duration(milliseconds: 20));
+
+    link.setAutoMode(true);
+    expect(link.autoMode, isTrue);
+    expect(link.activeCommand, isNull);
+    expect(transport.commands.last, 'A');
+
+    // Driving is refused while the Pi holds the wheel.
+    final before = transport.commands.length;
+    link.hold('L');
+    await Future<void>.delayed(const Duration(milliseconds: 20));
+    expect(transport.commands.length, before);
+
+    link.setAutoMode(false);
+    expect(link.autoMode, isFalse);
+    expect(transport.commands.last, 'M');
+  });
+
+  test('a link loss disarms auto mode', () async {
+    await link.connect(robot);
+    link.setAutoMode(true);
+
+    transport.dropLink('Mất kết nối Bluetooth.');
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+
+    expect(link.autoMode, isFalse);
+    expect(link.isConnected, isFalse);
+  });
+
+  test('strafe keys are ordinary held commands', () async {
+    await link.connect(robot);
+
+    link.hold('X');
+    await Future<void>.delayed(const Duration(milliseconds: 30));
+    expect(transport.commands.last, 'X');
+    expect(link.activeCommand, 'X');
+
+    link.hold('Z');
+    await Future<void>.delayed(const Duration(milliseconds: 30));
+    expect(transport.commands.last, 'Z');
+  });
+
+  test('front module toggles G1/G0 and keeps G1 alive', () async {
+    final fastTransport = FakeTransport();
+    final fastLink = RobotLink(
+      fastTransport,
+      keepAliveInterval: const Duration(milliseconds: 20),
+    );
+    addTearDown(() async {
+      fastLink.dispose();
+      await fastTransport.close();
+    });
+    await fastLink.connect(robot);
+
+    fastLink.setFrontModule(true);
+    await Future<void>.delayed(const Duration(milliseconds: 90));
+
+    expect(fastLink.frontModuleOn, isTrue);
+    expect(
+      fastTransport.commands.where((c) => c == 'G1').length,
+      greaterThan(1),
+      reason: 'the firmware would stop L298N #1 after 600 ms otherwise',
+    );
+
+    // Releasing the rear drive must not cancel the front toggle.
+    fastLink.release();
+    await Future<void>.delayed(const Duration(milliseconds: 60));
+    expect(fastTransport.commands.last, 'G1');
+    expect(fastLink.frontModuleOn, isTrue);
+
+    fastLink.setFrontModule(false);
+    await Future<void>.delayed(const Duration(milliseconds: 10));
+    expect(fastTransport.commands.last, 'G0');
+    expect(fastLink.frontModuleOn, isFalse);
+
+    final afterStop = fastTransport.commands.length;
+    await Future<void>.delayed(const Duration(milliseconds: 80));
+    expect(fastTransport.commands.length, afterStop);
+  });
+
+  test('arming auto mode leaves the suction brush alone', () async {
+    await link.connect(robot);
+    link.setFrontModule(true);
+    expect(link.frontModuleOn, isTrue);
+
+    link.setAutoMode(true);
+
+    expect(link.autoMode, isTrue);
+    expect(link.frontModuleOn, isTrue);
+    expect(transport.commands.sublist(2), ['G1', 'A']);
+
+    // The brush is not part of the drive, so it can still be switched while the
+    // Pi owns the wheels.
+    link.setFrontModule(false);
+    expect(transport.commands.last, 'G0');
+  });
+
+  test('a link loss clears the front module state', () async {
+    await link.connect(robot);
+    link.setFrontModule(true);
+    expect(link.frontModuleOn, isTrue);
+
+    transport.dropLink('Mất kết nối Bluetooth.');
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+
+    expect(link.frontModuleOn, isFalse);
+  });
+
+  test('relay writes an absolute Y1/Y0 and is inert offline', () async {
+    // Disconnected: nothing may hit the wire.
+    link.setRelay(true);
+    expect(transport.written, isEmpty);
+    expect(link.relayOn, isFalse);
+
+    await link.connect(robot);
+    link.setRelay(true);
+    await Future<void>.delayed(const Duration(milliseconds: 30));
+
+    expect(transport.commands.last, 'Y1');
+    expect(link.relayOn, isTrue);
+
+    // Repeating the same state must not spam the firmware.
+    final before = transport.commands.length;
+    link.setRelay(true);
+    await Future<void>.delayed(const Duration(milliseconds: 30));
+    expect(transport.commands.length, before);
+
+    link.setRelay(false);
+    await Future<void>.delayed(const Duration(milliseconds: 30));
+    expect(transport.commands.last, 'Y0');
+    expect(link.relayOn, isFalse);
+  });
+
+  test(
+    'a link loss clears the relay state, matching the firmware drop',
+    () async {
+      await link.connect(robot);
+      link.setRelay(true);
+      expect(link.relayOn, isTrue);
+
+      transport.dropLink('Mất kết nối Bluetooth.');
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+
+      expect(link.relayOn, isFalse);
+    },
+  );
 }

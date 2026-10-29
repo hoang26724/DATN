@@ -8,6 +8,12 @@ Cac endpoint (Flutter app dung cung may chay nay):
   /stream.mjpg  - multipart MJPEG, khung moi moi, tu dong dong neu camera treo
   /stats        - JSON so nguoi, so bong, FPS
   /lidar_data   - JSON man hinh radar LIDAR
+
+Ngoai HTTP, service con day vi tri ngang cua qua bong sang ESP32 qua UART de
+chay che do tu dong:
+  BALL <offset>  - offset trong [-1.0, 1.0], am = bong lech trai, duong = lech phai
+  BALL none      - khong thay bong
+ESP32 bo qua cac dong nay tru khi che do tu dong duoc bat tu app.
 """
 
 import json
@@ -34,10 +40,18 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 LIDAR_PORT = '/dev/ttyUSB0'
 LIDAR_BAUDRATE = 115200
 CAM_SIZE = (640, 480)
+# Camera tren robot duoc lap nguoc chieu, nen khung hinh bi lat 180 do. Xoay
+# ngay sau khi chup de ca web lan app Flutter (dung chung /stream.mjpg) deu
+# thay dung chieu, va box/so do ve sau do cung khong bi nguoc.
+CAMERA_ROTATE_180 = True
 MAX_DIST_MM = 6000
 MAX_DIST_M = MAX_DIST_MM / 1000
 HTTP_PORT = 8000
 JPEG_QUALITY = 80
+# ESP32 UART link. The Pi's GPIO14/15 UART usually shows up as /dev/serial0 once
+# the serial port is enabled. Override with ROBOT_UART_PORT if wired differently.
+UART_PORT = os.environ.get('ROBOT_UART_PORT', '/dev/serial0')
+UART_BAUDRATE = 115200
 # How long /stream.mjpg waits for a new camera frame before hanging up. Without
 # this a client whose camera worker died blocks on the Condition forever and only
 # ever sees a frozen picture; closing the response lets it reconnect instead.
@@ -318,6 +332,51 @@ updateStats();
 ).replace('__HALF_DIST_M__', f'{MAX_DIST_M / 2:.1f}')
 
 
+class EspBallLink:
+    """Day vi tri ngang cua qua bong sang ESP32 qua UART.
+
+    ESP32 chi dung cac dong nay khi che do tu dong duoc bat tu app; o che do
+    thu cong no bo qua. Neu khong mo duoc cong UART (chua bat serial, hoac
+    khong co pyserial) thi tat ca chi la canh bao - phan camera/LIDAR van chay.
+    """
+
+    def __init__(self, port=UART_PORT, baudrate=UART_BAUDRATE):
+        self._serial = None
+        try:
+            import serial  # pyserial, co the chua duoc cai
+            self._serial = serial.Serial(
+                port, baudrate, timeout=0, write_timeout=1
+            )
+            logging.info('UART ESP32: %s @ %d (pyserial)', port, baudrate)
+        except ImportError:
+            try:
+                self._serial = open(port, 'wb', buffering=0)
+                logging.info('UART ESP32: %s (raw file)', port)
+            except OSError as exc:
+                logging.warning('Khong mo duoc UART %s: %s', port, exc)
+        except OSError as exc:
+            logging.warning('Khong mo duoc UART %s: %s', port, exc)
+
+    def send_ball(self, offset):
+        """offset: None khi khong co bong, nguoc lai la [-1.0, 1.0]."""
+        if self._serial is None:
+            return
+        line = 'BALL none\n' if offset is None else f'BALL {offset:.3f}\n'
+        try:
+            self._serial.write(line.encode('ascii'))
+        except Exception as exc:  # cong UART rut ra giua chung
+            logging.warning('Loi gui UART: %s', exc)
+
+    def close(self):
+        if self._serial is None:
+            return
+        try:
+            self._serial.close()
+        except Exception:
+            pass
+        self._serial = None
+
+
 class StreamingOutput:
     """Latest JPEG plus the numbers belonging to it.
 
@@ -484,7 +543,7 @@ class NCNNPickleballDetector:
         return detections
 
 
-def camera_worker(pickleball_detector):
+def camera_worker(pickleball_detector, esp_link):
     imx500 = IMX500(MODEL_PATH)
     intrinsics = getattr(imx500, 'network_intrinsics', None)
     labels = getattr(intrinsics, 'labels', None) if intrinsics is not None else None
@@ -521,6 +580,9 @@ def camera_worker(pickleball_detector):
             request = picam2.capture_request()
             metadata = request.get_metadata()
             frame = request.make_array('main')
+            frame_height, frame_width = frame.shape[:2]
+            if CAMERA_ROTATE_180:
+                frame = cv2.rotate(frame, cv2.ROTATE_180)
             person_count = 0
             pickleball_count = 0
 
@@ -574,6 +636,11 @@ def camera_worker(pickleball_detector):
                         else:
                             x, y, width, height = obj
                         x, y, width, height = map(int, (x, y, width, height))
+                        if CAMERA_ROTATE_180:
+                            # Toa do IMX500 tinh tren khung goc chua xoay; doi
+                            # sang khung da xoay 180 truoc khi ve box.
+                            x = frame_width - x - width
+                            y = frame_height - y - height
                         person_count += 1
                         draw_detection(
                             frame,
@@ -600,6 +667,19 @@ def camera_worker(pickleball_detector):
                     )
             except Exception as exc:
                 logging.warning('Loi nhan dien pickleball NCNN: %s', exc)
+                detections = []
+
+            # Vi tri ngang cua qua bong so voi tam khung hinh, gui cho ESP32.
+            # Am = lech trai, duong = lech phai; None = khong thay bong. Chon
+            # bong tu tin nhat khi co nhieu qua.
+            ball_offset = None
+            if detections:
+                best = max(detections, key=lambda detection: detection[4])
+                centre_x = (best[0] + best[2]) / 2
+                half_width = CAM_SIZE[0] / 2
+                ball_offset = (centre_x - half_width) / half_width
+                ball_offset = max(-1.0, min(1.0, ball_offset))
+            esp_link.send_ball(ball_offset)
 
             frame_count += 1
             elapsed = time.time() - fps_start_time
@@ -750,7 +830,11 @@ if __name__ == '__main__':
     pickleball_detector = NCNNPickleballDetector(NCNN_PARAM_PATH, NCNN_BIN_PATH)
     logging.info('Da tai xong model pickleball NCNN')
 
-    camera_thread = Thread(target=camera_worker, args=(pickleball_detector,), daemon=True)
+    esp_link = EspBallLink()
+
+    camera_thread = Thread(
+        target=camera_worker, args=(pickleball_detector, esp_link), daemon=True
+    )
     camera_thread.start()
 
     lidar_thread = Thread(target=lidar_worker, daemon=True)

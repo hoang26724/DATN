@@ -51,10 +51,15 @@ class ControlPage extends StatefulWidget {
 
 class _ControlPageState extends State<ControlPage> with WidgetsBindingObserver {
   /// Fixed size of the control pad, scaled to fit whatever the screen gives us.
+  /// A 3x3 keypad: speed keys in the corners, directions on the sides, and the
+  /// suction toggle in the middle.
   static const double _dialWidth = 320;
-  static const double _dialHeight = 272;
+  static const double _dialHeight = 320;
+  static const double _padButtonSize = 96;
+  static const double _padGap = 8;
 
-  late final RobotLink _link = widget.link ?? RobotLink(MethodChannelTransport());
+  late final RobotLink _link =
+      widget.link ?? RobotLink(MethodChannelTransport());
   late final PiCameraLink _camera =
       widget.camera ?? PiCameraLink(HttpPiCameraTransport());
 
@@ -67,13 +72,15 @@ class _ControlPageState extends State<ControlPage> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _link.addListener(_onLinkChanged);
+    _link.addListener(_onChanged);
+    _camera.addListener(_onChanged);
     unawaited(_camera.start());
   }
 
   @override
   void dispose() {
-    _link.removeListener(_onLinkChanged);
+    _link.removeListener(_onChanged);
+    _camera.removeListener(_onChanged);
     if (_ownsLink) {
       _link.dispose();
     }
@@ -90,6 +97,8 @@ class _ControlPageState extends State<ControlPage> with WidgetsBindingObserver {
     // motors running.
     if (state != AppLifecycleState.resumed) {
       _link.release();
+      _link.releaseSpeed();
+      _link.setFrontModule(false);
       // An Android socket that was parked while the app was away comes back
       // wedged more often than not, and a wedged MJPEG socket looks exactly
       // like a frozen picture. Drop it and open a fresh one on resume.
@@ -99,7 +108,7 @@ class _ControlPageState extends State<ControlPage> with WidgetsBindingObserver {
     unawaited(_camera.start());
   }
 
-  void _onLinkChanged() {
+  void _onChanged() {
     if (mounted) {
       setState(() {});
     }
@@ -108,6 +117,17 @@ class _ControlPageState extends State<ControlPage> with WidgetsBindingObserver {
   void _press(String command) => _link.hold(command);
 
   void _release() => _link.release();
+
+  void _holdSpeed({required bool front, required int delta}) =>
+      _link.holdSpeed(front: front, delta: delta);
+
+  void _releaseSpeed() => _link.releaseSpeed();
+
+  void _toggleAuto() => _link.setAutoMode(!_link.autoMode);
+
+  void _toggleFrontModule() => _link.setFrontModule(!_link.frontModuleOn);
+
+  void _toggleRelay() => _link.setRelay(!_link.relayOn);
 
   Future<void> _openDevicePicker() async {
     await showModalBottomSheet<void>(
@@ -131,10 +151,11 @@ class _ControlPageState extends State<ControlPage> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final connected = _link.isConnected;
+    final auto = _link.autoMode;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ROBOT PANEL'),
+        title: const Text('ROBOT PICKLEBALL'),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16),
@@ -142,10 +163,7 @@ class _ControlPageState extends State<ControlPage> with WidgetsBindingObserver {
               children: [
                 LinkLamp(state: _link.state),
                 const SizedBox(width: 8),
-                Text(
-                  _statusLabel,
-                  style: theme.textTheme.labelMedium,
-                ),
+                Text(_statusLabel, style: theme.textTheme.labelMedium),
               ],
             ),
           ),
@@ -157,9 +175,11 @@ class _ControlPageState extends State<ControlPage> with WidgetsBindingObserver {
             _ConnectionStrip(
               connected: connected,
               connecting: _link.state == RobotLinkState.connecting,
-              deviceName: _link.deviceName,
               error: _link.lastError,
-              message: _link.lastMessage,
+              auto: auto,
+              relayOn: _link.relayOn,
+              onToggleAuto: _toggleAuto,
+              onToggleRelay: _toggleRelay,
               onPick: _openDevicePicker,
               onDisconnect: _disconnect,
             ),
@@ -170,7 +190,7 @@ class _ControlPageState extends State<ControlPage> with WidgetsBindingObserver {
             Expanded(
               flex: 5,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
                 child: Center(
                   child: AspectRatio(
                     aspectRatio: 4 / 3,
@@ -179,10 +199,21 @@ class _ControlPageState extends State<ControlPage> with WidgetsBindingObserver {
                 ),
               ),
             ),
+            // The person / pickleball counts and the speed sliders live here,
+            // between the picture and the pad: legible at a glance, and clear
+            // of the video itself.
+            _InfoStrip(
+              persons: _camera.stats?.persons,
+              pickleballs: _camera.stats?.pickleballs,
+              statsFresh: _camera.statsFresh,
+              frontSpeed: _link.frontSpeed,
+              rearSpeed: _link.rearSpeed,
+              auto: auto,
+            ),
             Expanded(
-              flex: 4,
+              flex: 5,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
                 // A fixed canvas scaled down to fit. The pad keeps its shape
                 // and its touch targets stay predictable on any screen, instead
                 // of reflowing into something thumb-unfriendly on a short one.
@@ -191,32 +222,15 @@ class _ControlPageState extends State<ControlPage> with WidgetsBindingObserver {
                   child: SizedBox(
                     width: _dialWidth,
                     height: _dialHeight,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        // Left thumb: pivot on the spot. Same icons as the
-                        // drive pair so all four read as one set.
-                        _DirectionCluster(
-                          enabled: connected,
-                          onPressed: _press,
-                          onReleased: _release,
-                          buttons: const [
-                            (command: 'L', label: 'Trái', icon: Icons.keyboard_arrow_left),
-                            (command: 'R', label: 'Phải', icon: Icons.keyboard_arrow_right),
-                          ],
-                        ),
-                        // Right thumb: drive.
-                        _DirectionCluster(
-                          enabled: connected,
-                          onPressed: _press,
-                          onReleased: _release,
-                          buttons: const [
-                            (command: 'F', label: 'Tiến', icon: Icons.keyboard_arrow_up),
-                            (command: 'B', label: 'Lùi', icon: Icons.keyboard_arrow_down),
-                          ],
-                        ),
-                      ],
+                    child: _PadGrid(
+                      enabled: connected,
+                      auto: auto,
+                      frontModuleOn: _link.frontModuleOn,
+                      onPress: _press,
+                      onRelease: _release,
+                      onSpeed: _holdSpeed,
+                      onSpeedRelease: _releaseSpeed,
+                      onToggleFrontModule: _toggleFrontModule,
                     ),
                   ),
                 ),
@@ -230,69 +244,328 @@ class _ControlPageState extends State<ControlPage> with WidgetsBindingObserver {
 
   String get _statusLabel {
     if (_link.state == RobotLinkState.connecting) {
-      return 'Đang nối...';
+      return 'Đang kết nối...';
     }
-    return _link.isConnected ? 'Đã nối' : 'Chưa nối';
+    return _link.isConnected ? 'Đã kết nối' : 'Chưa kết nối';
   }
 }
 
-/// One thumb zone: two stacked [DirectionButton]s.
+/// The 3x3 keypad.
 ///
-/// Used twice on the pad, so the pairs stay visually identical and the caller
-/// only decides *which* two commands go here.
-class _DirectionCluster extends StatelessWidget {
-  const _DirectionCluster({
+///   1 2 3     1 suction speed down, 2 forward, 3 drive speed down
+///   4 5 6     4 turn left, 5 toggle the suction brush, 6 turn right
+///   7 8 9     7 suction speed up, 8 backward, 9 drive speed up
+///
+/// The four direction keys are hold-to-drive; the corner keys are hold-to-ramp;
+/// the middle key is a tap that toggles L298N #1 (the suction brush). Auto mode
+/// lives in the top strip.
+class _PadGrid extends StatelessWidget {
+  const _PadGrid({
     required this.enabled,
-    required this.onPressed,
-    required this.onReleased,
-    required this.buttons,
+    required this.auto,
+    required this.frontModuleOn,
+    required this.onPress,
+    required this.onRelease,
+    required this.onSpeed,
+    required this.onSpeedRelease,
+    required this.onToggleFrontModule,
   });
 
   final bool enabled;
-  final ValueChanged<String> onPressed;
-  final VoidCallback onReleased;
-
-  /// Command, label and icon for each button, top to bottom.
-  final List<({String command, String label, IconData icon})> buttons;
+  final bool auto;
+  final bool frontModuleOn;
+  final ValueChanged<String> onPress;
+  final VoidCallback onRelease;
+  final void Function({required bool front, required int delta}) onSpeed;
+  final VoidCallback onSpeedRelease;
+  final VoidCallback onToggleFrontModule;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    const button = _ControlPageState._padButtonSize;
+    const gap = _ControlPageState._padGap;
+    // Driving is impossible while the Pi holds the wheel, so those keys go
+    // dead in auto mode. Speed still applies, so it stays live.
+    final driveEnabled = enabled && !auto;
+
+    Widget cell(Widget child) =>
+        SizedBox(width: button, height: button, child: child);
+
+    Widget row(List<Widget> children) => Row(
       mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        for (var i = 0; i < buttons.length; i++) ...[
-          if (i > 0) const SizedBox(height: 12),
-          DirectionButton(
-            command: buttons[i].command,
-            label: buttons[i].label,
-            icon: buttons[i].icon,
-            enabled: enabled,
-            onPressed: onPressed,
-            onReleased: onReleased,
-          ),
+        for (var i = 0; i < children.length; i++) ...[
+          if (i > 0) const SizedBox(width: gap),
+          children[i],
         ],
+      ],
+    );
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        row([
+          cell(
+            SpeedButton(
+              module: 1,
+              icon: Icons.add,
+              label: 'Tăng tốc hút',
+              enabled: enabled,
+              onPressed: () => onSpeed(front: true, delta: RobotLink.speedStep),
+              onReleased: onSpeedRelease,
+              size: button,
+            ),
+          ),
+          cell(
+            DirectionButton(
+              command: 'F',
+              label: 'Tiến',
+              icon: Icons.keyboard_arrow_up,
+              enabled: driveEnabled,
+              onPressed: onPress,
+              onReleased: onRelease,
+              size: button,
+            ),
+          ),
+          cell(
+            SpeedButton(
+              module: 2,
+              icon: Icons.add,
+              label: 'Tăng tốc chạy',
+              enabled: enabled,
+              onPressed: () =>
+                  onSpeed(front: false, delta: RobotLink.speedStep),
+              onReleased: onSpeedRelease,
+              size: button,
+            ),
+          ),
+        ]),
+        const SizedBox(height: gap),
+        row([
+          cell(
+            DirectionButton(
+              command: 'L',
+              label: 'Sang trái',
+              icon: Icons.chevron_left,
+              enabled: driveEnabled,
+              onPressed: onPress,
+              onReleased: onRelease,
+              size: button,
+            ),
+          ),
+          cell(
+            PadToggleButton(
+              icon: Icons.power,
+              label: 'Bật tắt hút',
+              active: frontModuleOn,
+              enabled: enabled,
+              onPressed: onToggleFrontModule,
+              size: button,
+            ),
+          ),
+          cell(
+            DirectionButton(
+              command: 'R',
+              label: 'Sang phải',
+              icon: Icons.chevron_right,
+              enabled: driveEnabled,
+              onPressed: onPress,
+              onReleased: onRelease,
+              size: button,
+            ),
+          ),
+        ]),
+        const SizedBox(height: gap),
+        row([
+          cell(
+            SpeedButton(
+              module: 1,
+              icon: Icons.remove,
+              label: 'Giảm tốc hút',
+              enabled: enabled,
+              onPressed: () =>
+                  onSpeed(front: true, delta: -RobotLink.speedStep),
+              onReleased: onSpeedRelease,
+              size: button,
+            ),
+          ),
+          cell(
+            DirectionButton(
+              command: 'B',
+              label: 'Lùi',
+              icon: Icons.keyboard_arrow_down,
+              enabled: driveEnabled,
+              onPressed: onPress,
+              onReleased: onRelease,
+              size: button,
+            ),
+          ),
+          cell(
+            SpeedButton(
+              module: 2,
+              icon: Icons.remove,
+              label: 'Giảm tốc chạy',
+              enabled: enabled,
+              onPressed: () =>
+                  onSpeed(front: false, delta: -RobotLink.speedStep),
+              onReleased: onSpeedRelease,
+              size: button,
+            ),
+          ),
+        ]),
       ],
     );
   }
 }
 
-/// Header strip: which robot, what went wrong, and the button that changes it.
+/// Strip between the camera and the pad: person / pickleball counts on the
+/// left, the two speed sliders on the right, plus an auto-mode badge.
+class _InfoStrip extends StatelessWidget {
+  const _InfoStrip({
+    required this.persons,
+    required this.pickleballs,
+    required this.statsFresh,
+    required this.frontSpeed,
+    required this.rearSpeed,
+    required this.auto,
+  });
+
+  final int? persons;
+  final int? pickleballs;
+  final bool statsFresh;
+  final int frontSpeed;
+  final int rearSpeed;
+  final bool auto;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          _count(
+            theme,
+            label: 'Người',
+            value: persons,
+            fresh: statsFresh,
+            dot: const Color(0xFFFF6B6B),
+          ),
+          const SizedBox(width: 12),
+          _count(
+            theme,
+            label: 'Bóng',
+            value: pickleballs,
+            fresh: statsFresh,
+            dot: const Color(0xFFFFD34E),
+          ),
+          const Spacer(),
+          _speed(theme, 'Tốc độ hút', frontSpeed, theme.colorScheme.primary),
+          const SizedBox(width: 10),
+          _speed(theme, 'Tốc độ chạy', rearSpeed, theme.colorScheme.tertiary),
+          if (auto) ...[
+            const SizedBox(width: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.tertiary,
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                'AUTO',
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: theme.colorScheme.onTertiary,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1,
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _count(
+    ThemeData theme, {
+    required String label,
+    required int? value,
+    required bool fresh,
+    required Color dot,
+  }) {
+    final shown = (value == null || !fresh) ? '--' : '$value';
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(color: dot, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 5),
+        Text(
+          label,
+          style: theme.textTheme.labelSmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(width: 4),
+        Text(
+          shown,
+          style: theme.textTheme.labelMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _speed(ThemeData theme, String label, int percent, Color color) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          '$percent%',
+          style: theme.textTheme.labelMedium?.copyWith(
+            color: color,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        Text(
+          label,
+          style: theme.textTheme.labelSmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Header strip: the auto, relay and connect/disconnect controls, spread evenly
+/// across one row. The app bar already owns the connection status, so the strip
+/// does not repeat the robot name or address.
 class _ConnectionStrip extends StatelessWidget {
   const _ConnectionStrip({
     required this.connected,
     required this.connecting,
-    required this.deviceName,
     required this.error,
-    required this.message,
+    required this.auto,
+    required this.relayOn,
+    required this.onToggleAuto,
+    required this.onToggleRelay,
     required this.onPick,
     required this.onDisconnect,
   });
 
   final bool connected;
   final bool connecting;
-  final String? deviceName;
   final String error;
-  final String message;
+  final bool auto;
+  final bool relayOn;
+  final VoidCallback onToggleAuto;
+  final VoidCallback onToggleRelay;
   final VoidCallback onPick;
   final VoidCallback onDisconnect;
 
@@ -300,15 +573,47 @@ class _ConnectionStrip extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final stripStyle = FilledButton.styleFrom(
+      visualDensity: VisualDensity.compact,
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      textStyle: theme.textTheme.labelSmall,
+    );
 
-    final String headline;
-    if (connected) {
-      headline = deviceName ?? 'Robot';
-    } else if (connecting) {
-      headline = 'Đang ghép nối...';
-    } else {
-      headline = 'Chưa có robot';
-    }
+    // Auto: lit while the Pi owns the wheels, inert until the robot link is up.
+    final autoButton = auto
+        ? FilledButton(
+            onPressed: connecting || !connected ? null : onToggleAuto,
+            style: stripStyle,
+            child: const Text('Tự động'),
+          )
+        : FilledButton.tonal(
+            onPressed: connecting || !connected ? null : onToggleAuto,
+            style: stripStyle,
+            child: const Text('Tự động'),
+          );
+    // Relay: lit while the GPIO-32 pin is closed, inert until the robot link is
+    // up. Absolute Y1/Y0 on the wire, so the label and the pin cannot drift
+    // apart after a reconnect.
+    final relayButton = relayOn
+        ? FilledButton(
+            onPressed: connecting || !connected ? null : onToggleRelay,
+            style: stripStyle,
+            child: const Text('Relay bật'),
+          )
+        : FilledButton.tonal(
+            onPressed: connecting || !connected ? null : onToggleRelay,
+            style: stripStyle,
+            child: const Text('Relay'),
+          );
+    final linkButton = FilledButton.tonalIcon(
+      onPressed: connecting ? null : (connected ? onDisconnect : onPick),
+      style: stripStyle,
+      icon: Icon(
+        connected ? Icons.bluetooth_disabled : Icons.bluetooth,
+        size: 16,
+      ),
+      label: Text(connected ? 'Ngắt' : 'Kết nối'),
+    );
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
@@ -317,14 +622,11 @@ class _ConnectionStrip extends StatelessWidget {
         children: [
           Row(
             children: [
-              Expanded(
-                child: Text(headline, style: theme.textTheme.titleMedium),
-              ),
-              FilledButton.tonalIcon(
-                onPressed: connecting ? null : (connected ? onDisconnect : onPick),
-                icon: Icon(connected ? Icons.link_off : Icons.bluetooth_searching),
-                label: Text(connected ? 'Ngắt' : 'Robot'),
-              ),
+              Expanded(child: autoButton),
+              const SizedBox(width: 8),
+              Expanded(child: relayButton),
+              const SizedBox(width: 8),
+              Expanded(child: linkButton),
             ],
           ),
           if (error.isNotEmpty)
@@ -332,17 +634,7 @@ class _ConnectionStrip extends StatelessWidget {
               padding: const EdgeInsets.only(top: 4),
               child: Text(
                 error,
-                style: theme.textTheme.bodySmall
-                    ?.copyWith(color: scheme.error),
-              ),
-            )
-          else if (connected && message.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Text(
-                message,
-                style: theme.textTheme.bodySmall
-                    ?.copyWith(color: scheme.onSurfaceVariant),
+                style: theme.textTheme.bodySmall?.copyWith(color: scheme.error),
               ),
             ),
         ],
@@ -445,8 +737,9 @@ class _DevicePickerState extends State<_DevicePicker> {
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Text(
                   _error,
-                  style: theme.textTheme.bodySmall
-                      ?.copyWith(color: theme.colorScheme.error),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.error,
+                  ),
                 ),
               ),
             if (_loading)
@@ -484,7 +777,9 @@ class _DevicePickerState extends State<_DevicePicker> {
               children: [
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: _loading ? null : widget.link.openBluetoothSettings,
+                    onPressed: _loading
+                        ? null
+                        : widget.link.openBluetoothSettings,
                     icon: const Icon(Icons.settings),
                     label: const Text('Cài đặt BT'),
                   ),

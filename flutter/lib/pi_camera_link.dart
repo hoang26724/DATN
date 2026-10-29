@@ -55,19 +55,9 @@ class PiCameraLink extends ChangeNotifier {
   /// watchdog could not be exercised.
   final DateTime Function() _clock;
 
-  /// Upper bound on how long [stop] waits for a cancel to land. Cancelling a
-  /// socket that is no longer answering can take a full TCP timeout, and the
-  /// reconnect button must not sit there waiting for it.
-  static const Duration _cancelGrace = Duration(seconds: 2);
-
   StreamSubscription<Uint8List>? _frames;
   Timer? _watchdog;
   Timer? _statsTimer;
-
-  /// In-flight cancellation of a previous connection. A reload has to wait for
-  /// it: re-listening to a stream whose cancel has not landed yet throws
-  /// "Stream has already been listened to".
-  Future<void> _detaching = Future<void>.value();
 
   bool _disposed = false;
 
@@ -135,47 +125,25 @@ class PiCameraLink extends ChangeNotifier {
   }
 
   Future<void> stop() async {
-    await _detach();
+    _detach();
     _setStatus(PiCameraStatus.idle);
   }
 
-  /// Cancels the timers and the stream subscription, then hands back a future
-  /// for the cancellation itself. [stop] awaits it; [_fail] stores it and moves
-  /// on, so the UI is never blocked on a socket that has stopped answering.
-  Future<void> _detach() {
+  /// Cancels the timers and the stream subscription. The socket cancel is
+  /// fire-and-forget: a subscription whose socket has stopped answering can
+  /// block its cancel for a full TCP timeout, and awaiting it deadlocks the
+  /// widget-test fake clock. A reload opens a fresh stream anyway, so nothing
+  /// needs to wait for the old cancel to land.
+  void _detach() {
     _watchdog?.cancel();
     _watchdog = null;
     _statsTimer?.cancel();
     _statsTimer = null;
     final frames = _frames;
     _frames = null;
-    final previous = _detaching;
-    if (frames == null) {
-      return previous;
+    if (frames != null) {
+      unawaited(frames.cancel());
     }
-    // A socket that is no longer answering can take a full TCP timeout to
-    // cancel; past the grace period it is forgotten anyway. A real Timer with
-    // an explicit cancel rather than Future.timeout, so a prompt cancel leaves
-    // nothing pending behind it.
-    return _detaching = _cancelWithinGrace(previous, frames);
-  }
-
-  Future<void> _cancelWithinGrace(
-    Future<void> previous,
-    StreamSubscription<Uint8List> frames,
-  ) async {
-    final done = Completer<void>();
-    final guard = Timer(_cancelGrace, done.complete);
-    await previous;
-    unawaited(
-      frames.cancel().whenComplete(() {
-        guard.cancel();
-        if (!done.isCompleted) {
-          done.complete();
-        }
-      }),
-    );
-    await done.future;
   }
 
   void _onFrame(Uint8List frame) {
@@ -229,9 +197,8 @@ class PiCameraLink extends ChangeNotifier {
   }
 
   void _fail(String message, PiCameraStatus status) {
-    // Tear the connection down without waiting for it, but keep its
-    // cancellation chained so a later reload cannot re-listen too early.
-    _detaching = _detach();
+    // Tear the connection down without waiting for it.
+    _detach();
     _message = message;
     _setStatus(status);
   }
@@ -275,7 +242,7 @@ class PiCameraLink extends ChangeNotifier {
   @override
   void dispose() {
     _disposed = true;
-    unawaited(_detach());
+    _detach();
     super.dispose();
   }
 }

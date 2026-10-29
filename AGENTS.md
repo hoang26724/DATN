@@ -3,7 +3,8 @@
 Graduation-thesis (DATN) repo for a robot + vision stack. **Three independent
 sub-projects with no root build, no CI, no task runner, and no root manifest.**
 Nothing at the root builds, tests, or runs anything. `flutter/` and `esp32/`
-collaborate only through a Bluetooth byte protocol; `raspberry/` talks to neither.
+collaborate only through a Bluetooth byte protocol; `esp32/` also reads a UART
+ball-position line from `raspberry/`.
 
 Root `README.md` is a list of weekly demo video links, not documentation.
 
@@ -13,7 +14,7 @@ Root `README.md` is a list of weekly demo video links, not documentation.
 | --- | --- | --- | --- |
 | `flutter/` | Android-only app that drives the chassis over **Classic Bluetooth (RFCOMM/SPP)** with a console-style gamepad UI | `flutter/lib/main.dart`; the Bluetooth host is hand-written Kotlin at `flutter/android/app/src/main/kotlin/com/example/app_control_robot/MainActivity.kt` | **`flutter/AGENTS.md`** — read it before touching anything in `flutter/` |
 | `esp32/` | PlatformIO firmware: ESP32 DOIT DEVKIT V1 + two L298N modules, four DC motors, Bluetooth peripheral | `esp32/src/main.cpp`, Arduino `setup()` / `loop()` (the framework supplies `main()`) | **`esp32/AGENTS.md`** — read it before touching anything in `esp32/` |
-| `raspberry/` | One-file Pi service: IMX500 person detection + NCNN pickleball detection + RPLidar, exposed as an HTML/MJPEG dashboard on port 8000 | `raspberry/pickleball.py` | none exists — read the file |
+| `raspberry/` | One-file Pi service: IMX500 person detection + NCNN pickleball detection + RPLidar, exposed as an HTML/MJPEG dashboard on port 8000, and streams the ball's horizontal offset to the ESP32 over UART | `raspberry/pickleball.py` | none exists — read the file |
 
 `raspberry/` is the weak spot and gets no instruction file: **no
 `requirements.txt`, no linter, no test**. Dependencies are implicit (`picamera2`,
@@ -35,12 +36,15 @@ package name, file paths use `flutter/`.
 `flutter/` <-> `esp32/` only, over RFCOMM/SPP. Both sides must change together:
 
 - device name `ESP32_ROBOT`, pairing PIN `1234` (firmware: `esp32/src/bluetooth_config.h`; app: the paired-device sheet)
-- one ASCII char per command plus an optional `\n`: `F` forward, `B` backward, `L` pivot left, `R` pivot right, `S` stop
+- one ASCII line per command (ended by `\n`): `F` forward, `B` backward, `L` / `R` turn left / right, `S` stop the rear main drive; `f<0-100>` / `r<0-100>` set the suction-brush / drive L298N speed (suction boots at 100%, drive at 50%); `A` arms the Pi auto driver, `M` returns to manual; `G1` / `G0` turn the L298N #1 suction brush on / off; `Y1` / `Y0` close / open the relay on GPIO 32 (it also drops on link loss). The firmware still accepts `X` / `Z` strafe, but the app no longer sends them.
+- **L298N #2 (rear) drives the two main omni wheels.** L298N #1 (front) drives the rotating suction brush, toggled by the middle pad key; while on, the app resends `G1` as a keep-alive so the firmware watchdog does not stop it. Auto mode leaves the brush alone (it is not a drive).
 - firmware `COMMAND_TIMEOUT_MS` = 600 ms (stop when no byte arrives) vs app `RobotLink.firmwareCommandTimeout` = 600 ms and `keepAliveInterval` = 200 ms. The app's keep-alive is what keeps a held direction driving.
+- firmware `AUTO_TIMEOUT_MS` = 600 ms (stop when no `BALL` line arrives from the Pi while auto is on)
 - Changing the name or PIN forces re-pairing on the phone.
 
-`raspberry/` shares no protocol with either. Do not assume the three parts are
-one system.
+`raspberry/` shares no protocol with `flutter/`. It does feed `esp32/` over UART:
+`BALL <offset>` (-1.0 left edge … +1.0 right edge) or `BALL none`, 115200 8N1 on
+ESP32 GPIO 21/22 (`Serial2`). Do not assume the three parts are one system.
 
 ## Commands
 
@@ -50,7 +54,7 @@ Run each from its own directory; there is no root-level invocation.
 # flutter/  — `flutter pub get` is required once after clone (pubspec.lock is committed)
 flutter analyze                  # typecheck + lint. `flutter_lints`; analysis_options.yaml excludes
                                  # android/** so Kotlin is NEVER analyzed here
-flutter test                     # 26 tests, headless, no hardware needed
+flutter test                     # 56 tests, headless, no hardware needed
 flutter build apk --debug        # the ONLY automated check that MainActivity.kt compiles
 flutter run                      # needs an Android phone with the robot already paired
 
@@ -68,7 +72,8 @@ with `pio device list` rather than assuming `COM3`.
 `flutter analyze` / `flutter test` prove nothing about the Kotlin host's runtime
 behaviour (a wrong `as?` cast is valid Kotlin). `pio run` proves only that the
 firmware compiles. Unproven without hardware: Bluetooth pairing, the socket
-opening, either watchdog firing, motor direction, and all of `raspberry/`. The
+opening, the command and auto watchdogs firing, motor direction and PWM speed,
+the Pi UART link, and all of `raspberry/`. The
 end-to-end bring-up order is in `esp32/AGENTS.md`.
 
 Also note `esp32/test/` holds only the stock PlatformIO README — `pio test` errors

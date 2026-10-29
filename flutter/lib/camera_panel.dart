@@ -13,11 +13,16 @@ import 'pi_camera_link.dart';
 /// [Image.memory] buffers shows up as stutter on a mid-range phone.
 ///
 /// Three ways out of a broken feed, in the order the user reaches for them:
-/// tap the picture (or the refresh button) to reload, which is the single
-/// "reload the image" affordance; the reconnect button in the middle appears on
-/// its own whenever the link says it needs one.
+/// tap the picture to reload, which is the single "reload the image"
+/// affordance; the reconnect button in the middle appears on its own whenever
+/// the link says it needs one. The panel carries no buttons of its own — the
+/// strip above it owns those (Bluetooth, relay).
 class CameraPanel extends StatefulWidget {
-  const CameraPanel({required this.feed, this.aspectRatio = 4 / 3, super.key});
+  const CameraPanel({
+    required this.feed,
+    this.aspectRatio = 4 / 3,
+    super.key,
+  });
 
   final PiCameraLink feed;
 
@@ -124,11 +129,6 @@ class _CameraPanelState extends State<CameraPanel> {
             _picture(feed),
             if (feed.stats != null) _statsOverlay(context, feed),
             _statusOverlay(context, feed),
-            Positioned(
-              top: 4,
-              right: 4,
-              child: _ReloadButton(onPressed: _reload, busy: feed.status == PiCameraStatus.connecting),
-            ),
           ],
         ),
       ),
@@ -140,11 +140,19 @@ class _CameraPanelState extends State<CameraPanel> {
     if (image == null) {
       return const SizedBox.shrink();
     }
-    return CustomPaint(painter: _FramePainter(image));
+    // Tap the picture to reload — the only reload affordance while the stream
+    // still shows a picture. The status overlay sits above this, so taps that
+    // land on it never reach here.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: _reload,
+      child: CustomPaint(painter: _FramePainter(image)),
+    );
   }
 
-  /// The counts the Pi draws on the web page, mirrored here as text so they
-  /// stay legible on a phone.
+  /// Only the FPS is drawn on the picture. The person and pickleball counts
+  /// live below the frame (see the stats strip in `ControlPage`), where they
+  /// stay readable without covering the video.
   Widget _statsOverlay(BuildContext context, PiCameraLink feed) {
     final theme = Theme.of(context);
     final stats = feed.stats;
@@ -152,7 +160,7 @@ class _CameraPanelState extends State<CameraPanel> {
       return const SizedBox.shrink();
     }
     final stale = !feed.statsFresh;
-    final value = stale ? '--' : null;
+    final value = stale ? '--' : stats.fps.toStringAsFixed(1);
 
     return Positioned(
       top: 8,
@@ -164,42 +172,35 @@ class _CameraPanelState extends State<CameraPanel> {
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _statRow(theme, 'Nguoi', value ?? '${stats.persons}', const Color(0xFFFF6B6B)),
-              _statRow(theme, 'Bong', value ?? '${stats.pickleballs}', const Color(0xFFFFD34E)),
-              _statRow(theme, 'FPS', value ?? stats.fps.toStringAsFixed(1), const Color(0xFF5EE7F7)),
+              Container(
+                width: 8,
+                height: 8,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF5EE7F7),
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                'FPS: ',
+                style: theme.textTheme.labelSmall?.copyWith(color: Colors.white70),
+              ),
+              Text(
+                value,
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ),
         ),
       ),
     );
   }
-
-  Widget _statRow(ThemeData theme, String label, String value, Color dot) => Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 8,
-            height: 8,
-            decoration: BoxDecoration(color: dot, shape: BoxShape.circle),
-          ),
-          const SizedBox(width: 6),
-          Text(
-            '$label: ',
-            style: theme.textTheme.labelSmall?.copyWith(color: Colors.white70),
-          ),
-          Text(
-            value,
-            style: theme.textTheme.labelMedium?.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      );
 
   /// Everything the user sees when there is no picture: the message from the
   /// link, and the reconnect button in the middle of the frame.
@@ -241,35 +242,6 @@ class _CameraPanelState extends State<CameraPanel> {
               ],
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ReloadButton extends StatelessWidget {
-  const _ReloadButton({required this.onPressed, required this.busy});
-
-  final VoidCallback onPressed;
-  final bool busy;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.black.withValues(alpha: 0.55),
-      shape: const CircleBorder(),
-      child: InkWell(
-        customBorder: const CircleBorder(),
-        onTap: onPressed,
-        child: SizedBox(
-          width: 40,
-          height: 40,
-          child: busy
-              ? const Padding(
-                  padding: EdgeInsets.all(12),
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Icon(Icons.refresh, color: Colors.white, size: 22),
         ),
       ),
     );

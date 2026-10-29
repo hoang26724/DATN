@@ -11,18 +11,20 @@ import 'package:flutter_test/flutter_test.dart';
 import 'pi_camera_test.dart' show FakePiCameraTransport;
 import 'robot_link_test.dart' show FakeTransport;
 
-const robot = BluetoothDevice(address: 'AA:BB:CC:DD:EE:FF', name: 'ESP32_ROBOT');
+const robot = BluetoothDevice(
+  address: 'AA:BB:CC:DD:EE:FF',
+  name: 'ESP32_ROBOT',
+);
 
-DirectionButton _arrowFor(WidgetTester tester, String command) =>
-    tester.widget(
-      find.byWidgetPredicate(
-        (widget) => widget is DirectionButton && widget.command == command,
-      ),
-    );
+DirectionButton _arrowFor(WidgetTester tester, String command) => tester.widget(
+  find.byWidgetPredicate(
+    (widget) => widget is DirectionButton && widget.command == command,
+  ),
+);
 
 /// The strip's link button. The pad carries no button of its own, so this is the
 /// only way into the device sheet.
-final linkButton = find.widgetWithText(FilledButton, 'Robot');
+final linkButton = find.widgetWithText(FilledButton, 'Kết nối');
 
 void main() {
   late FakeTransport transport;
@@ -64,6 +66,18 @@ void main() {
     await tester.pump();
   }
 
+  /// Finishes the device sheet's slide-in without `pumpAndSettle`.
+  ///
+  /// Timed pumps flush the microtasks and complete the sheet animation; they
+  /// are used throughout because a fixed schedule is deterministic, while
+  /// `pumpAndSettle` depends on there being no periodic timer left in the
+  /// camera's stats polling.
+  Future<void> settleSheet(WidgetTester tester) async {
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.pump(const Duration(milliseconds: 400));
+  }
+
   /// [testWidgets] that always parks the camera timers before the body returns:
   /// the feed is driven by periodic timers and a leftover one fails the test.
   void testPad(String description, WidgetTesterCallback body) {
@@ -75,67 +89,102 @@ void main() {
   }
 
   Future<void> pumpPage(WidgetTester tester) => tester.pumpWidget(
-        MaterialApp(home: ControlPage(link: link, camera: camera)),
-      );
+    MaterialApp(
+      home: ControlPage(link: link, camera: camera),
+    ),
+  );
 
-  testPad('the pad carries all four directions and no centre button',
-      (tester) async {
+  testPad('the pad carries four drive keys and the suction toggle', (
+    tester,
+  ) async {
     await pumpPage(tester);
 
     for (final command in ['F', 'B', 'L', 'R']) {
-      expect(find.byWidgetPredicate(
-        (widget) => widget is DirectionButton && widget.command == command,
-      ), findsOneWidget, reason: command);
+      expect(
+        find.byWidgetPredicate(
+          (widget) => widget is DirectionButton && widget.command == command,
+        ),
+        findsOneWidget,
+        reason: command,
+      );
     }
     // The stop button was pulled at the user's request; release() on pointer-up
     // is what stops the robot now. The link button went the same way: the strip
-    // at the top already carries it, and nothing may sit in the middle of the
-    // pad where a thumb holding a direction would cover it.
+    // at the top already carries it and the auto toggle moved there too.
     expect(find.text('STOP'), findsNothing);
     expect(find.byType(GamepadActionButton), findsNothing);
+    // Four corner speed keys, plus the middle key that toggles the suction.
+    expect(find.byType(SpeedButton), findsNWidgets(4));
+    expect(find.byType(PadToggleButton), findsOneWidget);
   });
 
-  testPad('turning sits left of the screen and driving sits right',
-      (tester) async {
+  testPad('the pad keeps the 3x3 keypad arrangement', (tester) async {
     await pumpPage(tester);
 
-    double centreOf(String command) =>
-        tester.getCenter(find.byWidgetPredicate(
-          (widget) => widget is DirectionButton && widget.command == command,
-        )).dx;
+    Offset centreOf(Finder finder) => tester.getCenter(finder);
+    Finder direction(String command) => find.byWidgetPredicate(
+      (widget) => widget is DirectionButton && widget.command == command,
+    );
+    Finder speed(int module, IconData icon) => find.byWidgetPredicate(
+      (widget) =>
+          widget is SpeedButton &&
+          widget.module == module &&
+          widget.icon == icon,
+    );
 
-    final left = centreOf('L');
-    final right = centreOf('R');
-    final forward = centreOf('F');
-    final backward = centreOf('B');
-    final screen = tester.getSize(find.byType(ControlPage)).width / 2;
+    final forward = direction('F');
+    final backward = direction('B');
+    final turnLeft = direction('L');
+    final turnRight = direction('R');
+    final suctionDown = speed(1, Icons.remove);
+    final suctionUp = speed(1, Icons.add);
+    final driveDown = speed(2, Icons.remove);
+    final driveUp = speed(2, Icons.add);
+    final toggle = find.byType(PadToggleButton);
 
-    // Pivot pair left of centre, drive pair right of it, so each hand owns one
-    // half of the pad and neither thumb reaches across.
-    expect(left, lessThan(screen));
-    expect(right, lessThan(screen));
-    expect(forward, greaterThan(screen));
-    expect(backward, greaterThan(screen));
+    // Row 1: suction up, forward, drive up.
+    expect(centreOf(suctionUp).dy, closeTo(centreOf(forward).dy, 1));
+    expect(centreOf(driveUp).dy, closeTo(centreOf(forward).dy, 1));
+    expect(centreOf(suctionUp).dx, lessThan(centreOf(forward).dx));
+    expect(centreOf(driveUp).dx, greaterThan(centreOf(forward).dx));
+    // Row 2: left, suction toggle, right.
+    expect(centreOf(turnLeft).dy, greaterThan(centreOf(forward).dy));
+    expect(centreOf(toggle).dy, closeTo(centreOf(turnLeft).dy, 1));
+    expect(centreOf(turnRight).dy, closeTo(centreOf(turnLeft).dy, 1));
+    expect(centreOf(turnLeft).dx, lessThan(centreOf(toggle).dx));
+    expect(centreOf(turnRight).dx, greaterThan(centreOf(toggle).dx));
+    // Row 3: suction down, backward, drive down.
+    expect(centreOf(backward).dy, greaterThan(centreOf(turnLeft).dy));
+    expect(centreOf(backward).dx, closeTo(centreOf(forward).dx, 1));
+    expect(centreOf(suctionDown).dy, closeTo(centreOf(backward).dy, 1));
+    expect(centreOf(driveDown).dy, closeTo(centreOf(backward).dy, 1));
   });
 
-  testPad('the pivot buttons look like the drive buttons', (tester) async {
+  testPad('the direction buttons share one icon-only look', (tester) async {
     await pumpPage(tester);
 
     // Same widget and same size, so only the icon differs and all four read as
-    // one set instead of two. The buttons are icon-only, which is what keeps
-    // them big enough to hit without looking at them.
+    // one set. The buttons are icon-only, which is what keeps them big enough
+    // to hit without looking at them.
     expect(_arrowFor(tester, 'L').size, _arrowFor(tester, 'F').size);
     expect(_arrowFor(tester, 'R').size, _arrowFor(tester, 'B').size);
-    expect(_arrowFor(tester, 'L').icon, Icons.keyboard_arrow_left);
-    expect(_arrowFor(tester, 'R').icon, Icons.keyboard_arrow_right);
-    expect(_arrowFor(tester, 'L').runtimeType, _arrowFor(tester, 'F').runtimeType);
+    expect(_arrowFor(tester, 'L').icon, Icons.chevron_left);
+    expect(_arrowFor(tester, 'R').icon, Icons.chevron_right);
+    expect(
+      _arrowFor(tester, 'L').runtimeType,
+      _arrowFor(tester, 'F').runtimeType,
+    );
     for (final command in ['F', 'B', 'L', 'R']) {
-      expect(find.descendant(
-        of: find.byWidgetPredicate(
-          (widget) => widget is DirectionButton && widget.command == command,
+      expect(
+        find.descendant(
+          of: find.byWidgetPredicate(
+            (widget) => widget is DirectionButton && widget.command == command,
+          ),
+          matching: find.text(_arrowFor(tester, command).label),
         ),
-        matching: find.text(_arrowFor(tester, command).label),
-      ), findsNothing, reason: command);
+        findsNothing,
+        reason: command,
+      );
     }
   });
 
@@ -167,7 +216,8 @@ void main() {
     final gesture = await tester.startGesture(tester.getCenter(forward));
     await tester.pump();
 
-    expect(transport.commands, ['F']);
+    // The first two writes are the connect-time f100/r50 speed preamble.
+    expect(transport.commands.sublist(2), ['F']);
     expect(link.activeCommand, 'F');
 
     await gesture.up();
@@ -186,7 +236,7 @@ void main() {
     );
     final gesture = await tester.startGesture(tester.getCenter(left));
     await tester.pump();
-    expect(transport.commands, ['L']);
+    expect(transport.commands.sublist(2), ['L']);
 
     // Dragging off the arm must not leave the motors running.
     await gesture.cancel();
@@ -211,20 +261,30 @@ void main() {
   testPad('the link lamp starts disconnected', (tester) async {
     await pumpPage(tester);
 
-    expect(find.text('Chưa nối'), findsOneWidget);
-    expect(find.text('Đã nối'), findsNothing);
+    expect(find.text('ROBOT PICKLEBALL'), findsOneWidget);
+    expect(find.text('Chưa kết nối'), findsOneWidget);
+    expect(find.text('Đã kết nối'), findsNothing);
+    expect(find.text('Kết nối'), findsOneWidget);
+    expect(find.byIcon(Icons.bluetooth), findsOneWidget);
     expect(
       tester.widget<LinkLamp>(find.byType(LinkLamp)).state,
       RobotLinkState.disconnected,
     );
   });
 
-  testPad('connecting shows the robot and enables the pad', (tester) async {
+  testPad('connecting shows only the status and enables the pad', (
+    tester,
+  ) async {
     await link.connect(robot);
     await pumpPage(tester);
 
-    expect(find.text('ESP32_ROBOT'), findsOneWidget);
-    expect(find.text('Đã nối'), findsOneWidget);
+    // The name and address stay in the picker; once connected the app bar is
+    // the only place the state is spelled out.
+    expect(find.text('ESP32_ROBOT'), findsNothing);
+    expect(find.text(robot.address), findsNothing);
+    expect(find.text('Đã kết nối'), findsOneWidget);
+    expect(find.text('Ngắt'), findsOneWidget);
+    expect(find.byIcon(Icons.bluetooth_disabled), findsOneWidget);
     for (final command in ['F', 'B', 'L', 'R']) {
       expect(_arrowFor(tester, command).enabled, isTrue, reason: command);
     }
@@ -237,8 +297,10 @@ void main() {
     transport.dropLink('Robot đã ngắt kết nối.');
     await tester.pump();
 
-    expect(find.text('Robot đã ngắt kết nối.'), findsOneWidget);
-    expect(find.text('Chưa nối'), findsOneWidget);
+    // The raw link-loss reason is deliberately not shown; only the status
+    // label changes.
+    expect(find.text('Robot đã ngắt kết nối.'), findsNothing);
+    expect(find.text('Chưa kết nối'), findsOneWidget);
     expect(_arrowFor(tester, 'F').enabled, isFalse);
   });
 
@@ -251,41 +313,109 @@ void main() {
     expect(find.textContaining('Mở Cài đặt Bluetooth'), findsNothing);
   });
 
+  testPad('the auto button shares the top row with relay and Bluetooth', (
+    tester,
+  ) async {
+    await pumpPage(tester);
+
+    final auto = tester.getCenter(find.widgetWithText(FilledButton, 'Tự động'));
+    final relay = tester.getCenter(find.widgetWithText(FilledButton, 'Relay'));
+    final bluetooth = tester.getCenter(
+      find.widgetWithText(FilledButton, 'Kết nối'),
+    );
+
+    expect(auto.dy, closeTo(relay.dy, 1));
+    expect(auto.dy, closeTo(bluetooth.dy, 1));
+    // The three buttons share the row evenly.
+    expect(relay.dx - auto.dx, closeTo(bluetooth.dx - relay.dx, 1));
+    // No auto key left inside the pad.
+    expect(find.text('TỰ ĐỘNG'), findsNothing);
+  });
+
+  testPad('the middle key toggles the suction brush with an absolute G1/G0', (
+    tester,
+  ) async {
+    await link.connect(robot);
+    await pumpPage(tester);
+
+    await tester.tap(find.byType(PadToggleButton));
+    await tester.pump();
+    expect(link.frontModuleOn, isTrue);
+    expect(transport.commands.last, 'G1');
+
+    await tester.tap(find.byType(PadToggleButton));
+    await tester.pump();
+    expect(link.frontModuleOn, isFalse);
+    expect(transport.commands.last, 'G0');
+  });
+
+  testPad('the corner keys ramp their own module', (tester) async {
+    await link.connect(robot);
+    await pumpPage(tester);
+
+    Finder speedKey(int module, IconData icon) => find.byWidgetPredicate(
+      (widget) =>
+          widget is SpeedButton &&
+          widget.module == module &&
+          widget.icon == icon,
+    );
+
+    Future<void> ramp(Finder key, String expected) async {
+      final gesture = await tester.startGesture(tester.getCenter(key));
+      await tester.pump();
+      expect(transport.commands.last, expected);
+      await gesture.up();
+      await tester.pump();
+    }
+
+    await ramp(speedKey(1, Icons.remove), 'f90');
+    await ramp(speedKey(2, Icons.remove), 'r40');
+    await ramp(speedKey(1, Icons.add), 'f100');
+    await ramp(speedKey(2, Icons.add), 'r50');
+
+    expect(link.frontSpeed, 100);
+    expect(link.rearSpeed, 50);
+  });
+
   testPad('the device sheet says so when nothing is paired', (tester) async {
     await pumpPage(tester);
 
     await tester.tap(linkButton);
-    await tester.pumpAndSettle();
+    await settleSheet(tester);
 
     expect(find.text('Chưa có robot nào được ghép nối.'), findsOneWidget);
   });
 
-  testPad('the device sheet lists a paired robot and connects to it',
-      (tester) async {
+  testPad('the device sheet lists a paired robot and connects to it', (
+    tester,
+  ) async {
     transport.paired = [robot];
     await pumpPage(tester);
 
     await tester.tap(linkButton);
-    await tester.pumpAndSettle();
+    await settleSheet(tester);
     expect(find.text('ESP32_ROBOT'), findsOneWidget);
 
     await tester.tap(find.text('ESP32_ROBOT'));
-    await tester.pumpAndSettle();
+    await settleSheet(tester);
 
     expect(transport.connects, [robot]);
     expect(link.isConnected, isTrue);
-    expect(find.text('ESP32_ROBOT'), findsOneWidget);
+    // The sheet closes and the strip no longer repeats the device name.
+    expect(find.text('ESP32_ROBOT'), findsNothing);
   });
 
   testPad('an unreachable robot leaves the pad locked', (tester) async {
-    transport.connectError = const BluetoothUnavailable('Robot không phản hồi.');
+    transport.connectError = const BluetoothUnavailable(
+      'Robot không phản hồi.',
+    );
     transport.paired = [robot];
     await pumpPage(tester);
 
     await tester.tap(linkButton);
-    await tester.pumpAndSettle();
+    await settleSheet(tester);
     await tester.tap(find.text('ESP32_ROBOT'));
-    await tester.pumpAndSettle();
+    await settleSheet(tester);
 
     // The sheet keeps the device listed so it can be retried, and the strip
     // behind it carries the same message.
@@ -300,16 +430,29 @@ void main() {
 
     await tester.pump(const Duration(milliseconds: 60));
 
-    // The same three numbers the web page burns into the picture.
-    expect(find.text('Nguoi: '), findsOneWidget);
-    expect(find.text('2'), findsOneWidget);
-    expect(find.text('Bong: '), findsOneWidget);
-    expect(find.text('4'), findsOneWidget);
+    // FPS is the only number burned into the picture...
+    expect(find.text('FPS: '), findsOneWidget);
     expect(find.text('11.5'), findsOneWidget);
+    // ...while the person and pickleball counts sit below the frame, in the
+    // strip between the camera and the pad.
+    expect(find.text('Người'), findsOneWidget);
+    expect(find.text('2'), findsOneWidget);
+    expect(find.text('Bóng'), findsOneWidget);
+    expect(find.text('4'), findsOneWidget);
   });
 
-  testPad('a stalled camera offers a reconnect button in the middle',
-      (tester) async {
+  testPad('the info strip shows both speed sliders', (tester) async {
+    await pumpPage(tester);
+
+    expect(find.text('100%'), findsOneWidget);
+    expect(find.text('50%'), findsOneWidget);
+    expect(find.text('Tốc độ hút'), findsOneWidget);
+    expect(find.text('Tốc độ chạy'), findsOneWidget);
+  });
+
+  testPad('a stalled camera offers a reconnect button in the middle', (
+    tester,
+  ) async {
     await pumpPage(tester);
     expect(find.text('Kết nối lại'), findsNothing);
 
@@ -323,7 +466,9 @@ void main() {
     final panel = tester.getRect(find.byType(CameraPanel));
     final button = tester.getRect(find.text('Kết nối lại'));
     // In the middle of the picture, not in a corner the user has to hunt for.
-    expect(button.center.dy, closeTo(panel.center.dy, 40));
+    // The label sits below the icon and message, so the tolerance allows for
+    // that stack while still rejecting a corner placement.
+    expect(button.center.dy, closeTo(panel.center.dy, 70));
     expect(button.center.dx, closeTo(panel.center.dx, 40));
   });
 
@@ -340,11 +485,28 @@ void main() {
     expect(find.text('Kết nối lại'), findsNothing);
   });
 
-  testPad('the refresh button reloads the image on demand', (tester) async {
+  testPad('the camera carries no buttons in its corners', (tester) async {
     await pumpPage(tester);
+
+    // The reload and relay buttons were pulled from the picture at the user's
+    // request: reloading is a tap on the picture now, and the relay toggle
+    // lives on the same line as the Bluetooth button in the strip.
+    expect(find.byKey(const ValueKey('cameraReload')), findsNothing);
+    expect(find.byKey(const ValueKey('cameraRelay')), findsNothing);
+  });
+
+  testPad('a frame that will not decode asks the link to start over', (
+    tester,
+  ) async {
+    await pumpPage(tester);
+    await tester.pump(const Duration(milliseconds: 60));
     final opensBefore = pi.opens;
 
-    await tester.tap(find.byIcon(Icons.refresh));
+    // Not a JPEG: the decoder throws, and the panel opens a fresh stream
+    // instead of leaving a black rectangle with no way out.
+    pi.emit([1, 2, 3]);
+    await tester.pump();
+    await tester.pump();
     await tester.pump();
 
     expect(pi.opens, opensBefore + 1);
