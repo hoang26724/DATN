@@ -21,6 +21,7 @@ https://github.com/user-attachments/assets/4e8b72dc-ee59-4841-8160-19f2ae6cd726
 <img width="1332" height="818" alt="image" src="https://github.com/user-attachments/assets/25025c7c-839e-40c9-b697-a9c1152d3fa9" />
 
 ## Tuần 10
+<img width="1257" height="788" alt="image" src="https://github.com/user-attachments/assets/3676f88a-8b22-472e-9013-917030f6fa7e" />
 
 ## Tuần 11
 
