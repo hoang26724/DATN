@@ -1,25 +1,24 @@
 
-https://github.com/user-attachments/assets/8bb39829-5556-4a9c-91c8-464cd50a4770
-## Tuần 4
+## Tuần 4: Test raspberry và train mô hình nhận diện banh pickleball
 https://github.com/user-attachments/assets/dea8821f-c263-4c26-93fc-3575cc94b2eb
 
-## Tuần 5+6
+## Tuần 5+6: Nhận diện người và banh pickleball trên raspberry
 https://github.com/user-attachments/assets/49fac109-8aab-4fd2-b3aa-436fa5dca9bb
 
-## Tuần 7
+## Tuần 7: Mô phỏng xe
 https://github.com/user-attachments/assets/4e8b72dc-ee59-4841-8160-19f2ae6cd726
 
-## Tuần 8: Tìm hiểu schematic từng linh kiện\
+## Tuần 8: Tìm hiểu schematic từng linh kiện
 # MODULE RELAY SCHEMATIC
 <img width="925" height="558" alt="image" src="https://github.com/user-attachments/assets/ada42aae-169e-4cab-aecb-1c96b9dceb07" />
 
 # TB6612FNG SCHEMATIC: https://cdn.sparkfun.com/datasheets/Robotics/TB6612FNG.pdf
 <img width="925" height="558" alt="image" src="https://github.com/user-attachments/assets/8562d278-cb81-40d6-8397-d42fb92a4006" />
 
-# xl6009 SCHEMATIC
+# XL6009 SCHEMATIC: https://www.haoyuelectronics.com/Attachment/XL6009/XL6009-DC-DC-Converter-Datasheet.pdf
 <img width="925" height="558" alt="image" src="https://github.com/user-attachments/assets/9d662dd4-d9d7-4fa9-a1d5-04341955d2eb" />
 
-# MT3608 SCHEMATIC
+# MT3608 SCHEMATIC: https://www.olimex.com/Products/Breadboarding/BB-PWR-3608/resources/MT3608.pdf
 <img width="925" height="558" alt="image" src="https://github.com/user-attachments/assets/59aa173f-4521-4b4d-9a8a-d29d945d15ea" />
 
 ## Tuần 9: Liên kết các module lại với nhau
@@ -52,6 +51,14 @@ https://github.com/user-attachments/assets/8f58f09b-1d87-4a23-8bbd-aeeef55fbcc2
 <img width="925" height="558" alt="image" src="https://github.com/user-attachments/assets/7aa2c45c-7415-4070-8c66-615be670fd44" />
 <img width="925" height="558" alt="image" src="https://github.com/user-attachments/assets/560cc3cf-2b17-48b2-93ae-ac1287035070" />
 <img width="925" height="558" alt="image" src="https://github.com/user-attachments/assets/a920e766-cedc-461e-9155-b443fec4dd4a" />
+
+## Tuần 13
+
+## Tuần 14
+
+## Tuần 15
+
+## Tuần 16
 
 
 
