@@ -1,0 +1,64 @@
+Removed Pin From Net: NetName=GND Pin=BT2-N
+Removed Pin From Net: NetName=GND Pin=BT5-N
+Removed Pin From Net: NetName=12V/1 Pin=C7-1
+Removed Pin From Net: NetName=GND Pin=C7-2
+Removed Pin From Net: NetName=12V/2 Pin=C13-1
+Removed Pin From Net: NetName=GND Pin=C13-2
+Removed Pin From Net: NetName=12V/1 Pin=T1-2
+Removed Pin From Net: NetName=12V/1 Pin=T1-3
+Removed Pin From Net: NetName=12V/2 Pin=T2-2
+Removed Pin From Net: NetName=12V/2 Pin=T2-3
+Removed Member From Class: ClassName=Sheet3 Member=C7
+Removed Member From Class: ClassName=Sheet3 Member=C13
+Added Component: Designator=BT?(BAT_1042)
+Add component (AddParameter): Name = "Check_prices"; Value = "https://www.snapeda.com/parts/1042/Keystone/view-part/?ref=eda"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "MF"; Value = "Keystone Electronics Corp."; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "MP"; Value = "1042"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Package"; Value = "NON STANDARD-5 Keystone"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "SnapEDA_Link"; Value = "https://www.snapeda.com/parts/1042/Keystone/view-part/?ref=snap"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Value"; Value = ""; VariantName = "[No Variations]"
+Added Component: Designator=J?(SAMTEC_MTLW-102-05-G-S-172)
+Add component (AddParameter): Name = "Availability"; Value = "Unavailable"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "MF"; Value = "Samtec"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "MP"; Value = "MTLW-102-05-G-S-172"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Package"; Value = "None"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Price"; Value = "None"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Value"; Value = ""; VariantName = "[No Variations]"
+Added Component: Designator=R?(tro smd 0603)
+Add component (AddParameter): Name = "Chung_Loai"; Value = "Dán"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Don_Vi"; Value = "Con"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Kieu_Chan"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Ma_Hang"; Value = "MH006334"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "So_Chan"; Value = "2"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Ten_Linh_Kien"; Value = "Tr? 0603 1% 1k"; VariantName = "[No Variations]"
+Added Component: Designator=R?(tro smd 0603)
+Add component (AddParameter): Name = "Chung_Loai"; Value = "Dán"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Don_Vi"; Value = "Con"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Kieu_Chan"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Ma_Hang"; Value = "MH006334"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "So_Chan"; Value = "2"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Ten_Linh_Kien"; Value = "Tr? 0603 1% 1k"; VariantName = "[No Variations]"
+Added Pin To Net: NetName=GND Pin=BT?-N
+Added Pin To Net: NetName=GND Pin=J?-01
+Added Pin To Net: NetName=12V/1 Pin=R?-1
+Added Pin To Net: NetName=12V/2 Pin=R?-1
+Added Pin To Net: NetName=GND Pin=R?-2
+Added Pin To Net: NetName=GND Pin=R?-2
+Added Pin To Net: NetName=GND Pin=T1-2
+Added Pin To Net: NetName=GND Pin=T1-3
+Added Pin To Net: NetName=GND Pin=T2-2
+Added Pin To Net: NetName=GND Pin=T2-3
+Added Pin To Net: NetName=32 Pin=R8-1
+Added Pin To Net: NetName=32 Pin=U1-7
+Added Net: Name=32
+Added Pin To Net: NetName=NetBT2_N Pin=BT2-N
+Added Pin To Net: NetName=NetBT2_N Pin=BT?-P
+Added Net: Name=NetBT2_N
+Added Pin To Net: NetName=NetBT5_N Pin=BT5-N
+Added Pin To Net: NetName=NetBT5_N Pin=J?-02
+Added Net: Name=NetBT5_N
+Added Member To Class: ClassName=Sheet3 Member=Component BT? 1042
+Added Member To Class: ClassName=Sheet3 Member=Component J? MTLW-102-05-G-S-172 (công t?c co)
+Added Member To Class: ClassName=Sheet3 Member=Component R? 2,2k
+Added Member To Class: ClassName=Sheet3 Member=Component R? 2,2k
+Added Room: Name=Sheet3

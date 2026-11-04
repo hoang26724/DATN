@@ -1,0 +1,70 @@
+Removed Pin From Net: NetName=RELAYPIN1 Pin=L2-1
+Removed Pin From Net: NetName=NetD1_1 Pin=L2-2
+Removed Pin From Net: NetName=RELAYPIN2 Pin=L3-1
+Removed Pin From Net: NetName=NetD2_1 Pin=L3-2
+Change Component Comment : Designator=L3 Old Comment=47uH-3,25A SMD New Comment=22uH-6,3A SMD
+Change Component Comment : Designator=J2 Old Comment=284392-3 New Comment=284392-3(k?t n?i v?i raspberry)
+Change Component Designator: OldDesignator=C6 NewDesignator=C7
+Change Component Designator: OldDesignator=C7 NewDesignator=C8
+Change Component Designator: OldDesignator=C8 NewDesignator=C6
+Change Component Designator: OldDesignator=D1 NewDesignator=D2
+Change Component Designator: OldDesignator=D2 NewDesignator=D3
+Change Component Designator: OldDesignator=D3 NewDesignator=D1
+Change Component Designator: OldDesignator=L1 NewDesignator=L2
+Change Component Designator: OldDesignator=L4 NewDesignator=L7
+Change Component Designator: OldDesignator=L5 NewDesignator=L8
+Change Component Designator: OldDesignator=L7 NewDesignator=L9
+Change Component Designator: OldDesignator=R1 NewDesignator=R2
+Change Component Designator: OldDesignator=R2 NewDesignator=R3
+Change Component Designator: OldDesignator=R3 NewDesignator=R1
+Change Component Designator: OldDesignator=R4 NewDesignator=R5
+Change Component Designator: OldDesignator=R5 NewDesignator=R6
+Change Component Designator: OldDesignator=R6 NewDesignator=R7
+Change Component Designator: OldDesignator=R7 NewDesignator=R8
+Change Component Designator: OldDesignator=R8 NewDesignator=R4
+Change Component Designator: OldDesignator=T1 NewDesignator=T2
+Change Component Designator: OldDesignator=T2 NewDesignator=T3
+Change Component Designator: OldDesignator=T3 NewDesignator=T1
+Added Component: Designator=L1(Cuon Cam 12x12x10)
+Add component (AddParameter): Name = "Chung_Loai"; Value = "Dán"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Don_Vi"; Value = "Con"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Kieu_Chan"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Ma_Hang"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Ten_Linh_Kien"; Value = "Cu?n C?m 100uH 7x7x4MM CD74"; VariantName = "[No Variations]"
+Added Component: Designator=L4(Cuon Cam 12x12x10)
+Add component (AddParameter): Name = "Chung_Loai"; Value = "Dán"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Don_Vi"; Value = "Con"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Kieu_Chan"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Ma_Hang"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Ten_Linh_Kien"; Value = "Cu?n C?m 100uH 7x7x4MM CD74"; VariantName = "[No Variations]"
+Added Component: Designator=L5(Cuon Cam 12x12x10)
+Add component (AddParameter): Name = "Chung_Loai"; Value = "Dán"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Don_Vi"; Value = "Con"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Kieu_Chan"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Ma_Hang"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Ten_Linh_Kien"; Value = "Cu?n C?m 100uH 7x7x4MM CD74"; VariantName = "[No Variations]"
+Added Pin To Net: NetName=RELAYPIN2 Pin=L1-1
+Added Pin To Net: NetName=RELAYPIN1 Pin=L3-1
+Added Pin To Net: NetName=NetD1_1 Pin=L4-2
+Added Pin To Net: NetName=NetD2_1 Pin=L5-2
+Change Net Name : Old Net Name=NetD1_1 New Net Name=NetD2_1
+Change Net Name : Old Net Name=NetD2_1 New Net Name=NetD3_1
+Change Net Name : Old Net Name=NetD3_1 New Net Name=NetD1_1
+Change Net Name : Old Net Name=NetL4_1 New Net Name=NetL7_1
+Change Net Name : Old Net Name=NetL5_1 New Net Name=NetL8_1
+Change Net Name : Old Net Name=NetL7_2 New Net Name=NetL9_2
+Change Net Name : Old Net Name=NetR1_2 New Net Name=NetR2_2
+Change Net Name : Old Net Name=NetR2_2 New Net Name=NetR3_2
+Change Net Name : Old Net Name=NetR3_2 New Net Name=NetR1_2
+Change Net Name : Old Net Name=NetR4_1 New Net Name=NetR5_1
+Change Net Name : Old Net Name=NetR6_1 New Net Name=NetR7_1
+Change Net Name : Old Net Name=NetT3_2 New Net Name=NetT1_2
+Added Pin To Net: NetName=NetL1_2 Pin=L1-2
+Added Pin To Net: NetName=NetL1_2 Pin=L5-1
+Added Net: Name=NetL1_2
+Added Pin To Net: NetName=NetL3_2 Pin=L3-2
+Added Pin To Net: NetName=NetL3_2 Pin=L4-1
+Added Net: Name=NetL3_2
+Added Member To Class: ClassName=Sheet3 Member=Component L8 LED 0805
+Added Member To Class: ClassName=Sheet3 Member=Component L9 LED 0805
+Added Room: Name=Sheet3

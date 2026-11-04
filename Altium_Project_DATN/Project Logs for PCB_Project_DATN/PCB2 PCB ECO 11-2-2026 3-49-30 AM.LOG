@@ -1,0 +1,4 @@
+Change Component Comment : Designator=J3 Old Comment=284392-2 New Comment=284392-2 (công t?c co)
+Added Pin To Net: NetName=RELAYPIN2+ Pin=RL2-3
+Change Net Name : Old Net Name=RELAYPIN2+ New Net Name=RELAYPIN2
+Added Room: Name=Sheet3

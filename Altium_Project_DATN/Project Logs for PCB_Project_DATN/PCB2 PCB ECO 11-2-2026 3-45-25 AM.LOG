@@ -1,0 +1,9 @@
+Removed Pin From Net: NetName=RELAYPIN2+ Pin=RL2-3
+Change Net Name : Old Net Name=PIN1+ New Net Name=PIN1
+Change Net Name : Old Net Name=PIN2+ New Net Name=PIN2
+Change Net Name : Old Net Name=PIN3+ New Net Name=PIN3
+Change Net Name : Old Net Name=PIN3 New Net Name=PIN3N
+Change Net Name : Old Net Name=RELAYPIN1+ New Net Name=RELAYPIN1
+Added Pin To Net: NetName=RELAYPIN2 Pin=RL2-3
+Added Net: Name=RELAYPIN2
+Added Room: Name=Sheet3

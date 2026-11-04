@@ -1,0 +1,33 @@
+Removed Pin From Net: NetName=motor 5 Pin=J1-01
+Removed Pin From Net: NetName=motor 5 Pin=J1-02
+Removed Pin From Net: NetName=motor 6 Pin=J1-03
+Removed Pin From Net: NetName=motor 6 Pin=J1-04
+Removed Pin From Net: NetName=motor 7 Pin=J1-05
+Removed Pin From Net: NetName=motor 7 Pin=J1-06
+Removed Pin From Net: NetName=motor 8 Pin=J1-07
+Removed Pin From Net: NetName=motor 8 Pin=J1-08
+Removed Member From Class: ClassName=Sheet3 Member=J3
+Change Component Designator: OldDesignator=C9 NewDesignator=C10
+Change Component Designator: OldDesignator=C10 NewDesignator=C9
+Change Component Designator: OldDesignator=C11 NewDesignator=C12
+Change Component Designator: OldDesignator=C12 NewDesignator=C11
+Change Component Designator: OldDesignator=C13 NewDesignator=C14
+Change Component Designator: OldDesignator=C14 NewDesignator=C13
+Change Component Designator: OldDesignator=IC1 NewDesignator=IC2
+Change Component Designator: OldDesignator=IC2 NewDesignator=IC1
+Change Component Designator: OldDesignator=J2 NewDesignator=J1
+Change Component Designator: OldDesignator=J3 NewDesignator=J2
+Added Component: Designator=P1(HDR1X8)
+Add component (AddParameter): Name = "LatestRevisionDate"; Value = "17-Jul-2002"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "LatestRevisionNote"; Value = "Re-released for DXP Platform."; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Publisher"; Value = "Altium Limited"; VariantName = "[No Variations]"
+Added Pin To Net: NetName=motor 5 Pin=P1-1
+Added Pin To Net: NetName=motor 5 Pin=P1-2
+Added Pin To Net: NetName=motor 6 Pin=P1-3
+Added Pin To Net: NetName=motor 6 Pin=P1-4
+Added Pin To Net: NetName=motor 7 Pin=P1-5
+Added Pin To Net: NetName=motor 7 Pin=P1-6
+Added Pin To Net: NetName=motor 8 Pin=P1-7
+Added Pin To Net: NetName=motor 8 Pin=P1-8
+Added Member To Class: ClassName=Sheet3 Member=Component P1 Header 8
+Added Room: Name=Sheet3

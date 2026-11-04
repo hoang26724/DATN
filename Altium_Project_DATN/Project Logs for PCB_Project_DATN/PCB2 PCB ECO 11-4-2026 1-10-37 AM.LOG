@@ -1,0 +1,41 @@
+Removed Pin From Net: NetName=NetD1_1 Pin=L2-2
+Removed Pin From Net: NetName=NetD2_1 Pin=L3-2
+Change Component Comment : Designator=J2 Old Comment=284392-3 New Comment=284392-3(k?t n?i v?i raspberry)
+Added Component: Designator=L4(Cuon Cam 12x12x10)
+Add component (AddParameter): Name = "Chung_Loai"; Value = "Dán"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Don_Vi"; Value = "Con"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Kieu_Chan"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Ma_Hang"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Ten_Linh_Kien"; Value = "Cu?n C?m 100uH 7x7x4MM CD74"; VariantName = "[No Variations]"
+Added Component: Designator=L5(Cuon Cam 12x12x10)
+Add component (AddParameter): Name = "Chung_Loai"; Value = "Dán"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Don_Vi"; Value = "Con"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Kieu_Chan"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Ma_Hang"; Value = ""; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Ten_Linh_Kien"; Value = "Cu?n C?m 100uH 7x7x4MM CD74"; VariantName = "[No Variations]"
+Added Pin To Net: NetName=NetD1_1 Pin=L4-2
+Added Pin To Net: NetName=NetD2_1 Pin=L5-2
+Added Pin To Net: NetName=NetL2_2 Pin=L2-2
+Added Pin To Net: NetName=NetL2_2 Pin=L4-1
+Added Net: Name=NetL2_2
+Added Pin To Net: NetName=NetL3_2 Pin=L3-2
+Added Pin To Net: NetName=NetL3_2 Pin=L5-1
+Added Net: Name=NetL3_2
+Added Member To Class: ClassName=Sheet3 Member=Component C6 220uF/25v
+Added Member To Class: ClassName=Sheet3 Member=Component C7 220uF/25v
+Added Member To Class: ClassName=Sheet3 Member=Component D1 SS54
+Added Member To Class: ClassName=Sheet3 Member=Component D2 SS54
+Added Member To Class: ClassName=Sheet3 Member=Component L3 47uH-3,25A SMD
+Added Member To Class: ClassName=Sheet3 Member=Component L4 LED 0805
+Added Member To Class: ClassName=Sheet3 Member=Component L4 47uH-3,25A SMD
+Added Member To Class: ClassName=Sheet3 Member=Component L5 47uH-3,25A SMD
+Added Member To Class: ClassName=Sheet3 Member=Component L5 LED 0805
+Added Member To Class: ClassName=Sheet3 Member=Component L7 LED 0805
+Added Member To Class: ClassName=Sheet3 Member=Component R2 1k
+Added Member To Class: ClassName=Sheet3 Member=Component R3 1k
+Added Member To Class: ClassName=Sheet3 Member=Component R5 1k
+Added Member To Class: ClassName=Sheet3 Member=Component R6 1k
+Added Member To Class: ClassName=Sheet3 Member=Component R7 1k
+Added Member To Class: ClassName=Sheet3 Member=Component R8 1k
+Added Member To Class: ClassName=Sheet3 Member=Component T2 10k
+Added Room: Name=Sheet3

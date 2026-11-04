@@ -1,0 +1,16 @@
+Added Component: Designator=X?(XT32k)
+Add component (AddParameter): Name = "Value"; Value = "32,768khz"; VariantName = "[No Variations]"
+Added Component: Designator=X?(XT32k)
+Add component (AddParameter): Name = "Value"; Value = "32,768khz"; VariantName = "[No Variations]"
+Change Net Name : Old Net Name=motor 1 New Net Name=motor 5
+Change Net Name : Old Net Name=motor 2 New Net Name=motor 6
+Change Net Name : Old Net Name=motor 3 New Net Name=motor 7
+Change Net Name : Old Net Name=motor 4 New Net Name=motor 8
+Change Net Name : Old Net Name=motor 5 New Net Name=motor 1
+Change Net Name : Old Net Name=motor 6 New Net Name=motor 2
+Change Net Name : Old Net Name=motor 7 New Net Name=motor 3
+Change Net Name : Old Net Name=motor 8 New Net Name=motor 4
+Added Member To Class: ClassName=Sheet3 Member=Component J3 TSW-102-25-G-S
+Added Member To Class: ClassName=Sheet3 Member=Component X? 32,768 Khz
+Added Member To Class: ClassName=Sheet3 Member=Component X? 32,768 Khz
+Added Room: Name=Sheet3

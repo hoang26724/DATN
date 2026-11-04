@@ -1,0 +1,16 @@
+Change Component Designator: OldDesignator=D4 NewDesignator=D7
+Change Component Designator: OldDesignator=D5 NewDesignator=D9
+Change Component Designator: OldDesignator=L4 NewDesignator=D4
+Change Component Designator: OldDesignator=L5 NewDesignator=D5
+Change Component Designator: OldDesignator=L6 NewDesignator=D6
+Change Component Designator: OldDesignator=L7 NewDesignator=L8
+Change Component Description : Designator=J4 Old Description=TERMI-BLOK PCB SIDE ENTRY STAC New Description=TERMI-BLOK PCB SIDE ENTRY STAC | TE Connectivity 284392-2
+Change Net Name : Old Net Name=NetD4_2 New Net Name=NetD7_2
+Change Net Name : Old Net Name=NetD5_A New Net Name=NetD9_A
+Change Net Name : Old Net Name=NetL4_1 New Net Name=NetD4_1
+Change Net Name : Old Net Name=NetL5_1 New Net Name=NetD5_1
+Change Net Name : Old Net Name=NetL6_1 New Net Name=NetD6_1
+Change Net Name : Old Net Name=NetL7_2 New Net Name=NetL8_2
+Added Member To Class: ClassName=Sheet3 Member=Component D7 SS54
+Added Member To Class: ClassName=Sheet3 Member=Component D9 1N4148W
+Added Room: Name=Sheet3

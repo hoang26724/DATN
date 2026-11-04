@@ -1,0 +1,7 @@
+Removed Pin From Net: NetName=5V Pin=D5-A
+Removed Pin From Net: NetName=NetD5_C Pin=D5-C
+Added Pin To Net: NetName=NetD5_C Pin=D5-A
+Added Pin To Net: NetName=5V Pin=D5-C
+Change Net Name : Old Net Name=NetD5_C New Net Name=NetD5_A
+Added Member To Class: ClassName=Sheet3 Member=Component D5 1N4148W
+Added Room: Name=Sheet3

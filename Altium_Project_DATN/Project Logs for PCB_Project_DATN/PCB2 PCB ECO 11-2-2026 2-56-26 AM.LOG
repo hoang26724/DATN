@@ -1,0 +1,64 @@
+Removed Pin From Net: NetName=motor 1 Pin=J1-01
+Removed Pin From Net: NetName=motor 1 Pin=J1-02
+Removed Pin From Net: NetName=motor 2 Pin=J1-03
+Removed Pin From Net: NetName=motor 2 Pin=J1-04
+Removed Pin From Net: NetName=motor 3 Pin=J1-05
+Removed Pin From Net: NetName=motor 3 Pin=J1-06
+Removed Pin From Net: NetName=motor 4 Pin=J1-07
+Removed Pin From Net: NetName=motor 4 Pin=J1-08
+Removed Pin From Net: NetName=motor 5 Pin=J2-01
+Removed Pin From Net: NetName=motor 6 Pin=J2-02
+Removed Pin From Net: NetName=motor 7 Pin=J2-03
+Removed Pin From Net: NetName=motor 8 Pin=J2-04
+Removed Pin From Net: NetName=GND Pin=J2-05
+Removed Pin From Net: NetName=RX Pin=J2-06
+Removed Pin From Net: NetName=TX Pin=J2-07
+Removed Pin From Net: NetName=PIN3 Pin=J3-01
+Removed Pin From Net: NetName=GND Pin=J3-02
+Removed Member From Class: ClassName=Sheet3 Member=J?
+Change Component Footprint: Designator=J3 Old Footprint=SAMTEC_TSW-102-25-G-S New Footprint=TE_284392-2
+Change Component Footprint: Designator=J2 Old Footprint=SAMTEC_TSW-107-07-G-S-LL New Footprint=TE_284392-7
+Change Component Comment : Designator=J3 Old Comment=TSW-102-25-G-S New Comment=284392-2
+Change Component Comment : Designator=J2 Old Comment=TSW-107-07-G-S-LL New Comment=284392-7
+Change Component Designator: OldDesignator=C9 NewDesignator=C10
+Change Component Designator: OldDesignator=C10 NewDesignator=C9
+Change Component Designator: OldDesignator=C11 NewDesignator=C12
+Change Component Designator: OldDesignator=C12 NewDesignator=C11
+Change Component Designator: OldDesignator=C13 NewDesignator=C14
+Change Component Designator: OldDesignator=C14 NewDesignator=C13
+Change Component Designator: OldDesignator=IC1 NewDesignator=IC2
+Change Component Designator: OldDesignator=IC2 NewDesignator=IC1
+Change Component Designator: OldDesignator=J? NewDesignator=J1
+Change component parameters: Designator = "J2" ("J2"); Footprint = "SAMTEC_TSW-107-07-G-S-LL"; UniqueID = "\RIUCULQQ" ("\RIUCULQQ")
+Change component parameters (AddParameter): Name = "Availability"; Value = "Unavailable"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "MF"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "MP"; Value = "284392-7"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Package"; Value = "None"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Price"; Value = "None"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Value"; Value = ""; VariantName = "[No Variations]"
+Change component parameters: Designator = "J3" ("J3"); Footprint = "SAMTEC_TSW-102-25-G-S"; UniqueID = "\YADPUJBL" ("\YADPUJBL")
+Change component parameters (AddParameter): Name = "Check_prices"; Value = "https://www.snapeda.com/parts/284392-2/TE+Connectivity+AMP+Connectors/view-part/?ref=eda"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "EU_RoHS_Compliance"; Value = "Compliant with Exemptions"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "MF"; Value = "TE Connectivity"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "MP"; Value = "284392-2"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Package"; Value = "None"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "SnapEDA_Link"; Value = "https://www.snapeda.com/parts/284392-2/TE+Connectivity+AMP+Connectors/view-part/?ref=snap"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Value"; Value = ""; VariantName = "[No Variations]"
+Added Pin To Net: NetName=motor 1 Pin=J1-1
+Added Pin To Net: NetName=motor 1 Pin=J1-2
+Added Pin To Net: NetName=motor 2 Pin=J1-3
+Added Pin To Net: NetName=motor 2 Pin=J1-4
+Added Pin To Net: NetName=motor 3 Pin=J1-5
+Added Pin To Net: NetName=motor 3 Pin=J1-6
+Added Pin To Net: NetName=motor 4 Pin=J1-7
+Added Pin To Net: NetName=motor 4 Pin=J1-8
+Added Pin To Net: NetName=motor 5 Pin=J2-1
+Added Pin To Net: NetName=motor 6 Pin=J2-2
+Added Pin To Net: NetName=motor 7 Pin=J2-3
+Added Pin To Net: NetName=motor 8 Pin=J2-4
+Added Pin To Net: NetName=GND Pin=J2-5
+Added Pin To Net: NetName=RX Pin=J2-6
+Added Pin To Net: NetName=TX Pin=J2-7
+Added Pin To Net: NetName=PIN3 Pin=J3-1
+Added Pin To Net: NetName=GND Pin=J3-2
+Added Room: Name=Sheet3

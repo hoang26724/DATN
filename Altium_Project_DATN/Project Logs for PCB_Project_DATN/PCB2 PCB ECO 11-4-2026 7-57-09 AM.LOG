@@ -1,0 +1,15 @@
+Removed Pin From Net: NetName=motor 3 Pin=J3-1
+Removed Pin From Net: NetName=motor 3 Pin=J3-2
+Removed Pin From Net: NetName=motor 4 Pin=J3-3
+Removed Pin From Net: NetName=motor 4 Pin=J3-4
+Removed Pin From Net: NetName=motor 5 Pin=J3-5
+Removed Pin From Net: NetName=motor 6 Pin=J3-6
+Added Pin To Net: NetName=motor 4 Pin=J3-1
+Added Pin To Net: NetName=motor 4 Pin=J3-2
+Added Pin To Net: NetName=motor 3 Pin=J3-3
+Added Pin To Net: NetName=motor 3 Pin=J3-4
+Added Pin To Net: NetName=motor 6 Pin=J3-5
+Added Pin To Net: NetName=motor 5 Pin=J3-6
+Added Member To Class: ClassName=Sheet3 Member=Component L4 LED 0805
+Added Member To Class: ClassName=Sheet3 Member=Component L5 LED 0805
+Added Room: Name=Sheet3

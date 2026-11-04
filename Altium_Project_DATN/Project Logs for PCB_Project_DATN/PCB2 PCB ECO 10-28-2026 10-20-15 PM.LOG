@@ -1,0 +1,10 @@
+Change Component Footprint: Designator=R1 Old Footprint=tro smd 0603 New Footprint=tro smd 2010
+Change Component Comment : Designator=R1 Old Comment=1.2k New Comment=1,2k
+Change component parameters: Designator = "R1" ("R1"); Footprint = "tro smd 0603"; UniqueID = "\RVNARCXI" ("\RVNARCXI")
+Change component parameters (AddParameter): Name = "Chung_Loai"; Value = "Dán"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Don_Vi"; Value = "Con"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Kieu_Chan"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Ma_Hang"; Value = "MH003444"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "So_Chan"; Value = "2"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Ten_Linh_Kien"; Value = "Tr? 2010 5% 331-330R"; VariantName = "[No Variations]"
+Added Room: Name=Sheet3

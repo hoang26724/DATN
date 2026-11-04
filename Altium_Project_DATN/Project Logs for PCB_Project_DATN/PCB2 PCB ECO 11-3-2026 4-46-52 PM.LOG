@@ -1,0 +1,10 @@
+Change Component Comment : Designator=D1 Old Comment=SS34 New Comment=SS54
+Change Component Comment : Designator=D2 Old Comment=SS34 New Comment=SS54
+Change Component Comment : Designator=D3 Old Comment=SS34 New Comment=SS54
+Change Component Comment : Designator=D4 Old Comment=SS34 New Comment=SS54
+Change Component Description : Designator=J3 Old Description=TERMI-BLOK PCB SIDE ENTRY STAC New Description=TERMI-BLOK PCB SIDE ENTRY STAC | TE Connectivity 284392-2
+Added Component: Designator=C?(Cap 0603)
+Added Component: Designator=C?(Cap 0603)
+Added Member To Class: ClassName=Sheet3 Member=Component C? ?
+Added Member To Class: ClassName=Sheet3 Member=Component C? ?
+Added Room: Name=Sheet3

@@ -1,0 +1,9 @@
+Removed Pin From Net: NetName=12V/1 Pin=IC1-13
+Removed Pin From Net: NetName=12V/1 Pin=IC1-14
+Removed Pin From Net: NetName=12V/2 Pin=IC2-13
+Removed Pin From Net: NetName=12V/2 Pin=IC2-14
+Added Pin To Net: NetName=12V/2 Pin=IC1-13
+Added Pin To Net: NetName=12V/2 Pin=IC1-14
+Added Pin To Net: NetName=12V/1 Pin=IC2-13
+Added Pin To Net: NetName=12V/1 Pin=IC2-14
+Added Room: Name=Sheet3

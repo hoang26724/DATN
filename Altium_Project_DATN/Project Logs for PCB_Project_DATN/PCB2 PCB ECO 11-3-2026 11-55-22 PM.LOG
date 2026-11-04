@@ -1,0 +1,10 @@
+Change Component Description : Designator=J4 Old Description=TERMI-BLOK PCB SIDE ENTRY STAC New Description=TERMI-BLOK PCB SIDE ENTRY STAC | TE Connectivity 284392-2
+Added Component: Designator=D?(SODFL3816X120N)
+Add component (AddParameter): Name = "Check_prices"; Value = "https://www.snapeda.com/parts/1N4148W/Diotec/view-part/?ref=eda"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "MF"; Value = "Diotec Semiconductor"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "MP"; Value = "1N4148W"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Package"; Value = "SOD-123F Diotec"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "SnapEDA_Link"; Value = "https://www.snapeda.com/parts/1N4148W/Diotec/view-part/?ref=snap"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Value"; Value = ""; VariantName = "[No Variations]"
+Added Member To Class: ClassName=Sheet3 Member=Component D? 1N4148W
+Added Room: Name=Sheet3

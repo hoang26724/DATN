@@ -1,0 +1,8 @@
+Added Component: Designator=HD?(HED2)
+Add component (AddParameter): Name = "Value"; Value = "Header 2"; VariantName = "[No Variations]"
+Added Component: Designator=HD?(HED2)
+Add component (AddParameter): Name = "Value"; Value = "Header 2"; VariantName = "[No Variations]"
+Change Net Name : Old Net Name=GX New Net Name=RX
+Added Member To Class: ClassName=Sheet3 Member=Component HD? Header 2
+Added Member To Class: ClassName=Sheet3 Member=Component HD? Header 2
+Added Room: Name=Sheet3

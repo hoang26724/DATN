@@ -1,0 +1,7 @@
+Change Component Comment : Designator=L2 Old Comment=47uH-3,25A SMD New Comment=22uH-6,3A SMD
+Change Component Comment : Designator=L3 Old Comment=47uH-3,25A SMD New Comment=22uH-6,3A SMD
+Change Component Comment : Designator=L4 Old Comment=47uH-3,25A SMD New Comment=22uH-6,3A SMD
+Change Component Comment : Designator=L5 Old Comment=47uH-3,25A SMD New Comment=22uH-6,3A SMD
+Added Member To Class: ClassName=Sheet3 Member=Component L4 LED 0805
+Added Member To Class: ClassName=Sheet3 Member=Component L5 LED 0805
+Added Room: Name=Sheet3

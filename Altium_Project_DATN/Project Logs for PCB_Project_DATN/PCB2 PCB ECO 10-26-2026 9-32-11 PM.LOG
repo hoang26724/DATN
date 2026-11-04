@@ -1,0 +1,26 @@
+Removed Pin From Net: NetName=4 Pin=IC1-15
+Removed Pin From Net: NetName=16 Pin=IC1-16
+Removed Pin From Net: NetName=17 Pin=IC1-17
+Removed Pin From Net: NetName=18 Pin=IC1-21
+Removed Pin From Net: NetName=5 Pin=IC1-22
+Removed Pin From Net: NetName=19 Pin=IC1-23
+Removed Pin From Net: NetName=33 Pin=IC2-15
+Removed Pin From Net: NetName=25 Pin=IC2-16
+Removed Pin From Net: NetName=26 Pin=IC2-17
+Removed Pin From Net: NetName=14 Pin=IC2-21
+Removed Pin From Net: NetName=27 Pin=IC2-22
+Removed Pin From Net: NetName=13 Pin=IC2-23
+Added Pin To Net: NetName=19 Pin=IC1-15
+Added Pin To Net: NetName=18 Pin=IC1-16
+Added Pin To Net: NetName=5 Pin=IC1-17
+Added Pin To Net: NetName=16 Pin=IC1-21
+Added Pin To Net: NetName=17 Pin=IC1-22
+Added Pin To Net: NetName=13 Pin=IC2-15
+Added Pin To Net: NetName=14 Pin=IC2-16
+Added Pin To Net: NetName=27 Pin=IC2-17
+Added Pin To Net: NetName=25 Pin=IC2-21
+Added Pin To Net: NetName=26 Pin=IC2-22
+Added Pin To Net: NetName=33 Pin=IC2-23
+Added Pin To Net: NetName=du Pin=IC1-23
+Added Net: Name=du
+Added Room: Name=Sheet3

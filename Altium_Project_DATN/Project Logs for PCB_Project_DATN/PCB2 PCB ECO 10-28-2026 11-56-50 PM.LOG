@@ -1,0 +1,79 @@
+Removed Pin From Net: NetName=12V/1 Pin=C11-2
+Removed Pin From Net: NetName=12V/2 Pin=C12-2
+Removed Pin From Net: NetName=12V/1 Pin=C13-1
+Removed Pin From Net: NetName=12V/2 Pin=C14-1
+Removed Pin From Net: NetName=12V/1 Pin=IC1-24
+Removed Pin From Net: NetName=12V/2 Pin=IC2-24
+Removed Pin From Net: NetName=motor 2 Pin=J1-01
+Removed Pin From Net: NetName=motor 2 Pin=J1-02
+Removed Pin From Net: NetName=motor 1 Pin=J1-03
+Removed Pin From Net: NetName=motor 1 Pin=J1-04
+Removed Pin From Net: NetName=motor 4 Pin=J2-01
+Removed Pin From Net: NetName=motor 4 Pin=J2-02
+Removed Pin From Net: NetName=motor 3 Pin=J2-04
+Removed Pin From Net: NetName=motor 6 Pin=J3-01
+Removed Pin From Net: NetName=motor 5 Pin=J3-02
+Removed Pin From Net: NetName=motor 8 Pin=J4-01
+Removed Pin From Net: NetName=motor 7 Pin=J4-02
+Removed Pin From Net: NetName=GND Pin=J5-01
+Removed Pin From Net: NetName=GND Pin=J6-03
+Removed Pin From Net: NetName=GND Pin=U2-32
+Removed Member From Class: ClassName=Sheet3 Member=J4
+Removed Member From Class: ClassName=Sheet3 Member=J5
+Removed Member From Class: ClassName=Sheet3 Member=J6
+Change Component Footprint: Designator=J3 Old Footprint=SAMTEC_MTLW-102-05-G-S-172 New Footprint=SAMTEC_TSW-102-25-G-S
+Change Component Footprint: Designator=J2 Old Footprint=SAMTEC_TMS-104-01-G-S New Footprint=SAMTEC_TSW-107-07-G-S-LL
+Change Component Footprint: Designator=J1 Old Footprint=SAMTEC_TMS-104-01-G-S New Footprint=SAMTEC_TSW-108-X-X-S
+Change Component Comment : Designator=J3 Old Comment=MTLW-102-05-G-S-172 New Comment=TSW-102-25-G-S
+Change Component Comment : Designator=J2 Old Comment=TMS-104-01-G-S New Comment=TSW-107-07-G-S-LL
+Change Component Comment : Designator=J1 Old Comment=TMS-104-01-G-S New Comment=TSW-108-X-X-S
+Change component parameters: Designator = "J1" ("J1"); Footprint = "SAMTEC_TMS-104-01-G-S"; UniqueID = "\KKOXFXGY" ("\KKOXFXGY")
+Change component parameters (AddParameter): Name = "Check_prices"; Value = "https://www.snapeda.com/parts/TSW-108-23-L-S/Samtec/view-part/?ref=eda"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "MF"; Value = "Samtec"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "MP"; Value = "TSW-108-23-L-S"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Package"; Value = "None"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "SnapEDA_Link"; Value = "https://www.snapeda.com/parts/TSW-108-23-L-S/Samtec/view-part/?ref=snap"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Value"; Value = ""; VariantName = "[No Variations]"
+Change component parameters: Designator = "J2" ("J2"); Footprint = "SAMTEC_TMS-104-01-G-S"; UniqueID = "\ZCLKZSKD" ("\ZCLKZSKD")
+Change component parameters (AddParameter): Name = "Availability"; Value = "Unavailable"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "MF"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "MP"; Value = "TSW-107-07-G-S-LL"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Package"; Value = "None"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Price"; Value = "None"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Value"; Value = ""; VariantName = "[No Variations]"
+Change component parameters: Designator = "J3" ("J3"); Footprint = "SAMTEC_MTLW-102-05-G-S-172"; UniqueID = "\MAIVFHCN" ("\MAIVFHCN")
+Change component parameters (AddParameter): Name = "Availability"; Value = "Unavailable"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "MF"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "MP"; Value = "TSW-102-25-G-S"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Package"; Value = "None"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Price"; Value = "None"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Value"; Value = ""; VariantName = "[No Variations]"
+Added Pin To Net: NetName=12V/2 Pin=C11-2
+Added Pin To Net: NetName=12V/1 Pin=C12-2
+Added Pin To Net: NetName=12V/2 Pin=C13-1
+Added Pin To Net: NetName=12V/1 Pin=C14-1
+Added Pin To Net: NetName=12V/2 Pin=IC1-24
+Added Pin To Net: NetName=12V/1 Pin=IC2-24
+Added Pin To Net: NetName=motor 5 Pin=J1-01
+Added Pin To Net: NetName=motor 5 Pin=J1-02
+Added Pin To Net: NetName=motor 6 Pin=J1-03
+Added Pin To Net: NetName=motor 6 Pin=J1-04
+Added Pin To Net: NetName=motor 7 Pin=J1-05
+Added Pin To Net: NetName=motor 7 Pin=J1-06
+Added Pin To Net: NetName=motor 8 Pin=J1-07
+Added Pin To Net: NetName=motor 8 Pin=J1-08
+Added Pin To Net: NetName=motor 1 Pin=J2-01
+Added Pin To Net: NetName=motor 2 Pin=J2-02
+Added Pin To Net: NetName=motor 4 Pin=J2-04
+Added Pin To Net: NetName=GND Pin=J2-05
+Added Pin To Net: NetName=GND Pin=J3-02
+Added Pin To Net: NetName=GX Pin=J2-06
+Added Pin To Net: NetName=GX Pin=U2-34
+Added Net: Name=GX
+Added Pin To Net: NetName=PIN3 Pin=BT3-N
+Added Pin To Net: NetName=PIN3 Pin=J3-01
+Added Net: Name=PIN3
+Added Pin To Net: NetName=TX Pin=J2-07
+Added Pin To Net: NetName=TX Pin=U2-35
+Added Net: Name=TX
+Added Room: Name=Sheet3
