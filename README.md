@@ -1,3 +1,5 @@
+
+https://github.com/user-attachments/assets/8bb39829-5556-4a9c-91c8-464cd50a4770
 ## Tuần 4
 https://github.com/user-attachments/assets/dea8821f-c263-4c26-93fc-3575cc94b2eb
 
@@ -23,11 +25,28 @@ https://github.com/user-attachments/assets/4e8b72dc-ee59-4841-8160-19f2ae6cd726
 ## Tuần 9: Liên kết các module lại với nhau
 <img width="1081" height="814" alt="image" src="https://github.com/user-attachments/assets/25025c7c-839e-40c9-b697-a9c1152d3fa9" />
 
-## Tuần 10: Xắp xếp linh kiện
+## Tuần 10: 
+#Xắp xếp linh kiện
 <img width="1081" height="814" alt="image" src="https://github.com/user-attachments/assets/3676f88a-8b22-472e-9013-917030f6fa7e" />
 
-## Tuần 11: Chỉnh sửa và tối ưu lại schematic
+# Lắp ráp xe:
+<img width="1081" height="814" alt="1793348066079_188190291440061605_3539750853996739622_00a9f9c0183757fa6ac2cc3e7284332c" src="https://github.com/user-attachments/assets/8b9141c9-c374-442d-9d91-ac0a5a73fb21" />
+<img width="1081" height="814" alt="1793348065834_188190291440061605_3539750853996739622_567d18965649a23a27a010766dfe51bc" src="https://github.com/user-attachments/assets/b894ea78-e3ec-43f9-9399-640d5b2b9d9d" />
+
+
+## Tuần 11: 
+# Chỉnh sửa và tối ưu lại schematic
 <img width="1081" height="814" alt="image" src="https://github.com/user-attachments/assets/8104a355-f3aa-4de2-8f71-a2d47278202d" />
+
+# Xe chạy ở chế độ manual
+Chạy thử:
+
+https://github.com/user-attachments/assets/90931f09-73d8-42c9-8ba3-23b202438503
+
+Màn hình ứng dụng:
+
+https://github.com/user-attachments/assets/8f58f09b-1d87-4a23-8bbd-aeeef55fbcc2
+
 
 ## Tuần 12: Đi dây, phủ đồng
 <img width="1081" height="814" alt="image" src="https://github.com/user-attachments/assets/7aa2c45c-7415-4070-8c66-615be670fd44" />
