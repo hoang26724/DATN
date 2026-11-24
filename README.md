@@ -56,9 +56,10 @@ https://github.com/user-attachments/assets/8f58f09b-1d87-4a23-8bbd-aeeef55fbcc2
 #SCHEMATIC
 <img width="925" height="558" alt="image" src="https://github.com/user-attachments/assets/3ee55a95-d232-4a8e-a4a0-9d0757863ce8" />
 #PCB
-<img width="925" height="558" alt="image" src="https://github.com/user-attachments/assets/7b84d8f6-8397-4926-8394-7e3594fd0a41" />
-<img width="925" height="558" alt="image" src="https://github.com/user-attachments/assets/33898f08-094a-4ca1-9994-b0a3c5571ca6" />
-<img width="925" height="558" alt="image" src="https://github.com/user-attachments/assets/32e678d2-49c5-48b8-82c2-87b8d524c07f" />
+<img width="925" height="558" alt="image" src="https://github.com/user-attachments/assets/432ee194-73a0-481d-944b-2a4d73ace1ab" />
+<img width="925" height="558" alt="image" src="https://github.com/user-attachments/assets/0c227fad-3a10-4af2-9a6b-e9069e0f70c1" />
+<img width="925" height="558" alt="image" src="https://github.com/user-attachments/assets/202d2526-ad1e-4386-9746-89c3dc6183b6" />
+
 
 
 
