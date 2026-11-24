@@ -53,12 +53,15 @@ https://github.com/user-attachments/assets/8f58f09b-1d87-4a23-8bbd-aeeef55fbcc2
 <img width="925" height="558" alt="image" src="https://github.com/user-attachments/assets/a920e766-cedc-461e-9155-b443fec4dd4a" />
 
 ## Tuần 13: Chỉnh sửa PCB
+
 #SCHEMATIC
 <img width="925" height="558" alt="image" src="https://github.com/user-attachments/assets/3ee55a95-d232-4a8e-a4a0-9d0757863ce8" />
+
 #PCB
-<img width="925" height="558" alt="image" src="https://github.com/user-attachments/assets/432ee194-73a0-481d-944b-2a4d73ace1ab" />
-<img width="925" height="558" alt="image" src="https://github.com/user-attachments/assets/0c227fad-3a10-4af2-9a6b-e9069e0f70c1" />
-<img width="925" height="558" alt="image" src="https://github.com/user-attachments/assets/202d2526-ad1e-4386-9746-89c3dc6183b6" />
+<img width="925" height="558" alt="image" src="https://github.com/user-attachments/assets/1b893bcd-b7fe-4de3-a00e-bc82a290ea41" />
+<img width="925" height="558" alt="image" src="https://github.com/user-attachments/assets/30152801-85ad-4073-80ff-cc516762f967" />
+<img width="925" height="558" alt="image" src="https://github.com/user-attachments/assets/b4b32c76-fe41-452e-b4f6-f784d8e9d40b" />
+
 
 
 
