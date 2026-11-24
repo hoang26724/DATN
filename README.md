@@ -52,7 +52,16 @@ https://github.com/user-attachments/assets/8f58f09b-1d87-4a23-8bbd-aeeef55fbcc2
 <img width="925" height="558" alt="image" src="https://github.com/user-attachments/assets/560cc3cf-2b17-48b2-93ae-ac1287035070" />
 <img width="925" height="558" alt="image" src="https://github.com/user-attachments/assets/a920e766-cedc-461e-9155-b443fec4dd4a" />
 
-## Tuần 13
+## Tuần 13: Chỉnh sửa PCB
+#SCHEMATIC
+<img width="925" height="558" alt="image" src="https://github.com/user-attachments/assets/3ee55a95-d232-4a8e-a4a0-9d0757863ce8" />
+#PCB
+<img width="925" height="558" alt="image" src="https://github.com/user-attachments/assets/7b84d8f6-8397-4926-8394-7e3594fd0a41" />
+<img width="925" height="558" alt="image" src="https://github.com/user-attachments/assets/33898f08-094a-4ca1-9994-b0a3c5571ca6" />
+<img width="925" height="558" alt="image" src="https://github.com/user-attachments/assets/32e678d2-49c5-48b8-82c2-87b8d524c07f" />
+
+
+
 
 ## Tuần 14
 
