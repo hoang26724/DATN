@@ -60,20 +60,21 @@ https://github.com/user-attachments/assets/8f58f09b-1d87-4a23-8bbd-aeeef55fbcc2
 
 #PCB
 
-<img width="925" height="558" alt="image" src="https://github.com/user-attachments/assets/1b893bcd-b7fe-4de3-a00e-bc82a290ea41" />
-<img width="925" height="558" alt="image" src="https://github.com/user-attachments/assets/30152801-85ad-4073-80ff-cc516762f967" />
-<img width="925" height="558" alt="image" src="https://github.com/user-attachments/assets/b4b32c76-fe41-452e-b4f6-f784d8e9d40b" />
+<img width="1034" height="775" alt="image" src="https://github.com/user-attachments/assets/0a391704-f2ac-4748-bf5f-f6ade093fec8" />
+<img width="1034" height="779" alt="image" src="https://github.com/user-attachments/assets/3f910754-ab9c-45d0-8e24-b173694e13d4" />
+<img width="948" height="711" alt="image" src="https://github.com/user-attachments/assets/00b1318c-7f13-4291-b336-57ca8ba10125" />
+<img width="1134" height="851" alt="image" src="https://github.com/user-attachments/assets/7e5bb46c-2917-4b7b-8441-4481026b5fc5" />
 
 
 
 
 
 
-## Tuần 14:   CON CAK
+## Tuần 14:   CON CAK QDH
 
-## Tuần 15
+## Tuần 15: MM QDH
 
-## Tuần 16
+## Tuần 16: DJTMEMAY QDH
 
 
 
