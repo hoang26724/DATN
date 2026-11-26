@@ -9,7 +9,7 @@ import 'package:flutter/foundation.dart' show visibleForTesting;
 ///
 /// The phone and the Pi have to be on the same network for any of this to work.
 /// Nothing here discovers the Pi: the address is fixed in the firmware brief.
-const String kPiCameraHost = '10.187.211.100';
+const String kPiCameraHost = '100.83.233.90';
 
 /// Port the dashboard in `raspberry/pickleball.py` listens on.
 const int kPiCameraPort = 8000;

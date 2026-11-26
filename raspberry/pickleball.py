@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 """
-Camera AI IMX500 + Pickleball NCNN + RPLIDAR web viewer cho Raspberry Pi.
+Camera AI IMX500 + Pickleball NCNN web viewer cho Raspberry Pi.
 Chay: python3 pickleball.py
 Xem: http://<IP_CUA_PI>:8000/
 
 Cac endpoint (Flutter app dung cung may chay nay):
   /stream.mjpg  - multipart MJPEG, khung moi moi, tu dong dong neu camera treo
   /stats        - JSON so nguoi, so bong, FPS
-  /lidar_data   - JSON man hinh radar LIDAR
 
 Ngoai HTTP, service con day vi tri ngang cua qua bong sang ESP32 qua UART de
 chay che do tu dong:
@@ -28,7 +27,6 @@ import cv2
 import numpy as np
 from picamera2 import Picamera2
 from picamera2.devices.imx500 import IMX500
-from rplidar import RPLidar
 
 try:
     import ncnn
@@ -37,15 +35,11 @@ except ImportError as exc:
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-LIDAR_PORT = '/dev/ttyUSB0'
-LIDAR_BAUDRATE = 115200
 CAM_SIZE = (640, 480)
 # Camera tren robot duoc lap nguoc chieu, nen khung hinh bi lat 180 do. Xoay
 # ngay sau khi chup de ca web lan app Flutter (dung chung /stream.mjpg) deu
 # thay dung chieu, va box/so do ve sau do cung khong bi nguoc.
 CAMERA_ROTATE_180 = True
-MAX_DIST_MM = 6000
-MAX_DIST_M = MAX_DIST_MM / 1000
 HTTP_PORT = 8000
 JPEG_QUALITY = 80
 # ESP32 UART link. The Pi's GPIO14/15 UART usually shows up as /dev/serial0 once
@@ -79,7 +73,7 @@ PAGE = """\
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Pi Vision - Camera AI, Pickleball va LIDAR</title>
+<title>Pi Vision - Camera AI va Pickleball</title>
 <style>
 :root {
   color-scheme: dark;
@@ -115,7 +109,7 @@ body::before {
   background-size: 32px 32px;
   mask-image: linear-gradient(to bottom, black, transparent 75%);
 }
-.app { position: relative; width: min(1280px, calc(100% - 32px)); margin: 0 auto; padding: 30px 0 42px; }
+.app { position: relative; width: min(980px, calc(100% - 32px)); margin: 0 auto; padding: 30px 0 42px; }
 .topbar { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 24px; }
 .eyebrow { color: var(--cyan); font-size: 12px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; }
 h1 { margin: 6px 0 0; font-size: clamp(26px, 4vw, 42px); letter-spacing: -.04em; }
@@ -123,7 +117,6 @@ h1 { margin: 6px 0 0; font-size: clamp(26px, 4vw, 42px); letter-spacing: -.04em;
 .badges { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
 .badge { display: inline-flex; align-items: center; gap: 7px; padding: 8px 11px; border: 1px solid var(--border); border-radius: 999px; background: rgba(12, 28, 46, .72); color: #cfe6fa; font-size: 11px; font-weight: 700; letter-spacing: .08em; }
 .badge::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 12px var(--green); }
-.dashboard { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(340px, .9fr); gap: 20px; align-items: start; }
 .panel { border: 1px solid var(--border); border-radius: 22px; background: var(--panel); box-shadow: 0 24px 70px rgba(0,0,0,.28); backdrop-filter: blur(18px); overflow: hidden; }
 .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 17px 20px; border-bottom: 1px solid var(--border); }
 .panel-title { display: flex; align-items: center; gap: 10px; font-weight: 750; }
@@ -140,27 +133,16 @@ h1 { margin: 6px 0 0; font-size: clamp(26px, 4vw, 42px); letter-spacing: -.04em;
 .legend .person i { background: var(--red); box-shadow: 0 0 9px rgba(255,107,107,.8); }
 .legend .ball i { background: var(--yellow); box-shadow: 0 0 9px rgba(255,211,78,.8); }
 .legend b { min-width: 22px; padding: 2px 8px; border-radius: 7px; color: #06131f; background: linear-gradient(135deg, var(--cyan), #8bf4d0); font-size: 13px; font-weight: 800; text-align: center; }
-.lidar-body { padding: 16px 18px 20px; }
-.range-row { display: flex; justify-content: space-between; align-items: center; gap: 14px; margin-bottom: 12px; color: var(--muted); font-size: 12px; }
-.range-row strong { color: var(--text); font-size: 15px; }
-#observed-range { color: var(--cyan); font-weight: 700; }
-.radar-wrap { position: relative; overflow: hidden; border: 1px solid rgba(94,231,247,.13); border-radius: 18px; background: radial-gradient(circle, rgba(22, 62, 87, .8), rgba(4, 13, 23, .95) 70%); }
-#radar { display: block; width: 100%; height: auto; aspect-ratio: 1; }
-.distance-scale { margin-top: 16px; }
-.distance-bar { height: 8px; border-radius: 99px; background: linear-gradient(90deg, #2bd576 0%, #ffd400 50%, #ef4444 100%); box-shadow: 0 0 18px rgba(255,212,0,.18); }
-.distance-labels { display: flex; justify-content: space-between; margin-top: 7px; color: var(--muted); font-size: 11px; }
 .footer-note { margin-top: 18px; color: var(--muted); font-size: 12px; text-align: center; }
 @media (max-width: 900px) {
   .topbar { align-items: flex-start; flex-direction: column; }
   .badges { justify-content: flex-start; }
-  .dashboard { grid-template-columns: 1fr; }
 }
 @media (max-width: 520px) {
-  .app { width: min(100% - 20px, 1280px); padding-top: 20px; }
+  .app { width: min(100% - 20px, 980px); padding-top: 20px; }
   .panel { border-radius: 16px; }
   .panel-head { padding: 14px 15px; }
-  .camera-body, .lidar-body { padding: 10px; }
-  .range-row { align-items: flex-start; flex-direction: column; gap: 4px; }
+  .camera-body { padding: 10px; }
 }
 </style>
 </head>
@@ -169,16 +151,15 @@ h1 { margin: 6px 0 0; font-size: clamp(26px, 4vw, 42px); letter-spacing: -.04em;
   <header class="topbar">
     <div>
       <div class="eyebrow">Raspberry Pi Vision</div>
-      <h1>Camera AI &amp; LIDAR</h1>
+      <h1>Camera AI</h1>
       <p class="subtitle">Theo doi nguoi va bong pickleball theo thoi gian thuc.</p>
     </div>
     <div class="badges">
       <span class="badge">IMX500</span>
       <span class="badge">NCNN</span>
-      <span class="badge">LIDAR</span>
     </div>
   </header>
-  <section class="dashboard">
+  <section>
     <article class="panel">
       <div class="panel-head">
         <div class="panel-title"><span>◉</span><div>Camera AI<small>Nhan dien ngay tren Raspberry Pi</small></div></div>
@@ -192,116 +173,12 @@ h1 { margin: 6px 0 0; font-size: clamp(26px, 4vw, 42px); letter-spacing: -.04em;
         </div>
       </div>
     </article>
-    <article class="panel">
-      <div class="panel-head">
-        <div class="panel-title"><span>⌁</span><div>Radar LIDAR<small>Mau theo khoang cach do</small></div></div>
-        <div class="live">SCANNING</div>
-      </div>
-      <div class="lidar-body">
-        <div class="range-row"><span>Quet toi daa <strong>__MAX_DIST_M__ m</strong></span><span id="observed-range">Diem xa nhat: 0.0 m</span></div>
-        <div class="radar-wrap"><canvas id="radar" width="560" height="560"></canvas></div>
-        <div class="distance-scale"><div class="distance-bar"></div><div class="distance-labels"><span>Gan: 0 m</span><span>Vua: __HALF_DIST_M__ m</span><span>Xa: __MAX_DIST_M__ m</span></div></div>
-      </div>
-    </article>
   </section>
-  <p class="footer-note">Cac diem LIDAR cang xa se chuyen dan tu xanh sang vang va do.</p>
+  <p class="footer-note">Trang web chi hien thi camera, nhan dien nguoi va bong pickleball.</p>
 </main>
 <script>
-const canvas = document.getElementById('radar');
-const ctx = canvas.getContext('2d');
-const CX = 280;
-const CY = 280;
-const MAXR = 240;
-const MAXDIST = __MAX_DIST_MM__;
-const observedRange = document.getElementById('observed-range');
 const statPerson = document.getElementById('stat-person');
 const statBall = document.getElementById('stat-ball');
-
-function mixColor(first, second, amount) {
-  return `rgb(${Math.round(first[0] + (second[0] - first[0]) * amount)}, ${Math.round(first[1] + (second[1] - first[1]) * amount)}, ${Math.round(first[2] + (second[2] - first[2]) * amount)})`;
-}
-
-function distanceColor(distance) {
-  const ratio = Math.min(Math.max(distance / MAXDIST, 0), 1);
-  if (ratio <= 0.5) {
-    return mixColor([43, 213, 118], [255, 212, 0], ratio * 2);
-  }
-  return mixColor([255, 212, 0], [239, 68, 68], (ratio - 0.5) * 2);
-}
-
-function drawGrid() {
-  ctx.clearRect(0, 0, 560, 560);
-  ctx.fillStyle = 'rgba(4, 13, 23, 0.2)';
-  ctx.fillRect(0, 0, 560, 560);
-  ctx.lineWidth = 1;
-  ctx.font = '12px system-ui, sans-serif';
-  ctx.textAlign = 'left';
-  for (let ring = 1; ring <= 4; ring += 1) {
-    const radius = MAXR * ring / 4;
-    ctx.beginPath();
-    ctx.arc(CX, CY, radius, 0, Math.PI * 2);
-    ctx.strokeStyle = ring === 4 ? 'rgba(94,231,247,0.28)' : 'rgba(158,179,201,0.18)';
-    ctx.stroke();
-    ctx.fillStyle = 'rgba(202,224,241,0.72)';
-    ctx.fillText(`${(MAXDIST * ring / 4 / 1000).toFixed(1)} m`, CX + 7, CY - radius + 15);
-  }
-  ctx.beginPath();
-  ctx.moveTo(CX - MAXR, CY);
-  ctx.lineTo(CX + MAXR, CY);
-  ctx.moveTo(CX, CY - MAXR);
-  ctx.lineTo(CX, CY + MAXR);
-  ctx.strokeStyle = 'rgba(158,179,201,0.2)';
-  ctx.stroke();
-  ctx.fillStyle = 'rgba(234,246,255,0.9)';
-  ctx.font = 'bold 12px system-ui, sans-serif';
-  ctx.fillText('0°', CX - 8, 16);
-  ctx.textAlign = 'right';
-  ctx.fillText('90°', 552, CY + 4);
-  ctx.fillText('180°', CX + 8, 552);
-  ctx.textAlign = 'left';
-  ctx.fillText('270°', 8, CY + 4);
-  ctx.textAlign = 'left';
-}
-
-async function updateLidar() {
-  try {
-    const response = await fetch('/lidar_data', {cache: 'no-store'});
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-    const points = await response.json();
-    drawGrid();
-    let maxObserved = 0;
-    points.forEach(function (point) {
-      if (!Array.isArray(point) || point.length < 3) {
-        return;
-      }
-      const angle = Number(point[1]);
-      const distance = Number(point[2]);
-      if (!Number.isFinite(angle) || !Number.isFinite(distance) || distance <= 0 || distance > MAXDIST) {
-        return;
-      }
-      maxObserved = Math.max(maxObserved, distance);
-      const angleRad = angle * Math.PI / 180;
-      const x = CX + distance / MAXDIST * MAXR * Math.sin(angleRad);
-      const y = CY - distance / MAXDIST * MAXR * Math.cos(angleRad);
-      const color = distanceColor(distance);
-      ctx.beginPath();
-      ctx.arc(x, y, 3.2, 0, Math.PI * 2);
-      ctx.fillStyle = color;
-      ctx.shadowColor = color;
-      ctx.shadowBlur = 7;
-      ctx.fill();
-      ctx.shadowBlur = 0;
-    });
-    observedRange.textContent = `Diem xa nhat: ${(maxObserved / 1000).toFixed(1)} m`;
-  } catch (error) {
-    drawGrid();
-    observedRange.textContent = 'LIDAR: dang cho du lieu';
-    console.error(error);
-  }
-  window.setTimeout(updateLidar, 200);
-}
 
 // So nguoi va so bong: nam ngay duoi anh trong bang chu thay vi nen len
 // chinh khung hinh, de doc khong can nhin kem. /stats cung cap ca FPS, nhung
@@ -321,15 +198,11 @@ async function updateStats() {
   window.setTimeout(updateStats, 500);
 }
 
-drawGrid();
-updateLidar();
 updateStats();
 </script>
 </body>
 </html>
-""".replace('__MAX_DIST_MM__', str(MAX_DIST_MM)).replace(
-    '__MAX_DIST_M__', f'{MAX_DIST_M:.1f}'
-).replace('__HALF_DIST_M__', f'{MAX_DIST_M / 2:.1f}')
+"""
 
 
 class EspBallLink:
@@ -712,33 +585,7 @@ def camera_worker(pickleball_detector, esp_link):
                 request.release()
 
 
-lidar_points = []
-lidar_lock = Lock()
 
-
-def lidar_worker():
-    global lidar_points
-    while True:
-        lidar = None
-        try:
-            lidar = RPLidar(LIDAR_PORT, baudrate=LIDAR_BAUDRATE)
-            time.sleep(0.5)
-            lidar.clean_input()
-            for scan in lidar.iter_scans():
-                points = [[q, angle, dist] for q, angle, dist in scan]
-                with lidar_lock:
-                    lidar_points = points
-        except Exception as exc:
-            logging.warning('Loi LIDAR: %s - thu lai sau 5s', exc)
-            time.sleep(5)
-        finally:
-            if lidar is not None:
-                try:
-                    lidar.stop()
-                    lidar.stop_motor()
-                    lidar.disconnect()
-                except Exception:
-                    pass
 
 
 class StreamingHandler(server.BaseHTTPRequestHandler):
@@ -784,14 +631,6 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
                 logging.warning('Dong stream camera: %s', exc)
             except Exception as exc:
                 logging.warning('Client camera ngat: %s', exc)
-        elif self.path == '/lidar_data':
-            with lidar_lock:
-                data = json.dumps(lidar_points).encode('utf-8')
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/json')
-            self.send_header('Content-Length', str(len(data)))
-            self.end_headers()
-            self.wfile.write(data)
         elif self.path == '/stats':
             # Cac so do doc tu khung moi nhat: FPS (cung duoc ve tren anh) va
             # so nguoi, so bong (trang web va app Flutter doc o day).
@@ -836,9 +675,6 @@ if __name__ == '__main__':
         target=camera_worker, args=(pickleball_detector, esp_link), daemon=True
     )
     camera_thread.start()
-
-    lidar_thread = Thread(target=lidar_worker, daemon=True)
-    lidar_thread.start()
 
     try:
         srv = StreamingServer(('', HTTP_PORT), StreamingHandler)

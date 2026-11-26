@@ -14,16 +14,14 @@ Root `README.md` is a list of weekly demo video links, not documentation.
 | --- | --- | --- | --- |
 | `flutter/` | Android-only app that drives the chassis over **Classic Bluetooth (RFCOMM/SPP)** with a console-style gamepad UI | `flutter/lib/main.dart`; the Bluetooth host is hand-written Kotlin at `flutter/android/app/src/main/kotlin/com/example/app_control_robot/MainActivity.kt` | **`flutter/AGENTS.md`** — read it before touching anything in `flutter/` |
 | `esp32/` | PlatformIO firmware: ESP32 DOIT DEVKIT V1 + two L298N modules, four DC motors, Bluetooth peripheral | `esp32/src/main.cpp`, Arduino `setup()` / `loop()` (the framework supplies `main()`) | **`esp32/AGENTS.md`** — read it before touching anything in `esp32/` |
-| `raspberry/` | One-file Pi service: IMX500 person detection + NCNN pickleball detection + RPLidar, exposed as an HTML/MJPEG dashboard on port 8000, and streams the ball's horizontal offset to the ESP32 over UART | `raspberry/pickleball.py` | none exists — read the file |
+| `raspberry/` | One-file Pi service: IMX500 person detection + NCNN pickleball detection, exposed as an HTML/MJPEG dashboard on port 8000, and streams the ball's horizontal offset to the ESP32 over UART | `raspberry/pickleball.py` | none exists — read the file |
 
 `raspberry/` is the weak spot and gets no instruction file: **no
 `requirements.txt`, no linter, no test**. Dependencies are implicit (`picamera2`,
-`picamera2.devices.imx500`, `rplidar`, `ncnn`, `cv2`, `numpy`); one model path is
+`picamera2.devices.imx500`, `ncnn`, `cv2`, `numpy`); one model path is
 absolute and Pi-specific
-(`/usr/share/imx500-models/imx500_network_ssd_mobilenetv2_fpnlite_320x320_pp.rpk`);
-the LIDAR is hardcoded to `/dev/ttyUSB0` @ 115200. It cannot run or be checked on
-a dev machine at all. `raspberry/.gitignore` still ignores `rplidar_sdk/` and
-`lidar_web/`, directories that no longer exist.
+(`/usr/share/imx500-models/imx500_network_ssd_mobilenetv2_fpnlite_320x320_pp.rpk`).
+It cannot run or be checked on a dev machine at all.
 
 ## Naming gotcha
 
