@@ -1,0 +1,51 @@
+Removed Pin From Net: NetName=PIN1 Pin=BT1-P
+Removed Pin From Net: NetName=PIN2 Pin=BT2-P
+Removed Pin From Net: NetName=PIN3N Pin=BT3-N
+Removed Pin From Net: NetName=PIN3 Pin=BT3-P
+Removed Pin From Net: NetName=GND Pin=BT5-N
+Removed Pin From Net: NetName=GND Pin=BT6-N
+Removed Member From Class: ClassName=Sheet Member=BT4
+Removed Member From Class: ClassName=Sheet Member=BT5
+Removed Member From Class: ClassName=Sheet Member=BT6
+Removed Member From Class: ClassName=Sheet Member=BT?
+Change Component Footprint: Designator=BT2 Old Footprint=BAT_1042 New Footprint=BAT_1048P
+Change Component Footprint: Designator=BT3 Old Footprint=BAT_1042 New Footprint=BAT_1048P
+Change Component Comment : Designator=BT2 Old Comment=1042 New Comment=1048P
+Change Component Comment : Designator=BT3 Old Comment=1042 New Comment=1048P
+Change Component Designator: OldDesignator=BT? NewDesignator=BT1
+Change component parameters: Designator = "BT2" ("BT2"); Footprint = "BAT_1042"; UniqueID = "\VJEFDSYT" ("\VJEFDSYT")
+Change component parameters (AddParameter): Name = "Availability"; Value = "In Stock"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Check_prices"; Value = "https://www.snapeda.com/parts/1048P/Keystone+Electronics/view-part/?ref=eda"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "MF"; Value = "Keystone Electronics"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "MP"; Value = "1048P"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Package"; Value = "None"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Price"; Value = "None"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Purchase-URL"; Value = "https://pricing.snapeda.com/search/part/1048P/?ref=eda"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "SnapEDA_Link"; Value = "https://www.snapeda.com/parts/1048P/Keystone+Electronics/view-part/?ref=snap"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Value"; Value = ""; VariantName = "[No Variations]"
+Change component parameters: Designator = "BT3" ("BT3"); Footprint = "BAT_1042"; UniqueID = "\RGOUYNAE" ("\RGOUYNAE")
+Change component parameters (AddParameter): Name = "Availability"; Value = "In Stock"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Check_prices"; Value = "https://www.snapeda.com/parts/1048P/Keystone+Electronics/view-part/?ref=eda"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "MF"; Value = "Keystone Electronics"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "MP"; Value = "1048P"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Package"; Value = "None"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Price"; Value = "None"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Purchase-URL"; Value = "https://pricing.snapeda.com/search/part/1048P/?ref=eda"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "SnapEDA_Link"; Value = "https://www.snapeda.com/parts/1048P/Keystone+Electronics/view-part/?ref=snap"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Value"; Value = ""; VariantName = "[No Variations]"
+Added Pin To Net: NetName=PIN1 Pin=BT1-P1
+Added Pin To Net: NetName=GND Pin=BT2-N1
+Added Pin To Net: NetName=PIN2 Pin=BT2-N2
+Added Pin To Net: NetName=PIN3 Pin=BT3-N2
+Added Pin To Net: NetName=GND Pin=BT3-P1
+Added Pin To Net: NetName=PIN3N Pin=BT3-P2
+Added Pin To Net: NetName=NetBT1_N1 Pin=BT1-N1
+Added Pin To Net: NetName=NetBT1_N1 Pin=BT1-P2
+Added Net: Name=NetBT1_N1
+Added Pin To Net: NetName=NetBT1_N2 Pin=BT1-N2
+Added Pin To Net: NetName=NetBT1_N2 Pin=BT2-P1
+Added Net: Name=NetBT1_N2
+Added Pin To Net: NetName=NetBT2_P2 Pin=BT2-P2
+Added Pin To Net: NetName=NetBT2_P2 Pin=BT3-N1
+Added Net: Name=NetBT2_P2
+Added Room: Name=Sheet

@@ -1,0 +1,9 @@
+Removed Pin From Net: NetName=PIN3 Pin=BT3-N2
+Removed Pin From Net: NetName=PIN3N Pin=BT3-P2
+Change Component Comment : Designator=J5 Old Comment=284392-2  New Comment=284392-2
+Change Component Description : Designator=J4 Old Description=TERMI-BLOK PCB SIDE ENTRY STAC New Description=TERMI-BLOK PCB SIDE ENTRY STAC | TE Connectivity 284392-2
+Change Component Description : Designator=J5 Old Description=TERMI-BLOK PCB SIDE ENTRY STAC New Description=TERMI-BLOK PCB SIDE ENTRY STAC | TE Connectivity 284392-2
+Added Pin To Net: NetName=PIN3N Pin=BT3-N2
+Added Pin To Net: NetName=PIN3 Pin=BT3-P2
+Added Member To Class: ClassName=Sheet Member=Component J5 284392-2
+Added Room: Name=Sheet

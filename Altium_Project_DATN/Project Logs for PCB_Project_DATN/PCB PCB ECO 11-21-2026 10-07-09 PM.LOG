@@ -1,0 +1,4 @@
+Change Component Description : Designator=BT2 Old Description=SMT Polarized Battery Holder for 18650 Battery New Description=SMT Polarized Battery Holder for 18650 Battery | Keystone Electronics 1042P
+Add Component: Footprint Not Found BAT_1048P
+Add Class Member: Failed to add class member : Component BT? 1048P
+Added Room: Name=Sheet

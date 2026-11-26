@@ -1,0 +1,134 @@
+Removed Pin From Net: NetName=GND Pin=BT3-N1
+Removed Pin From Net: NetName=NetBT2_N2 Pin=BT3-P1
+Removed Pin From Net: NetName=GND Pin=C1-2
+Removed Pin From Net: NetName=5V Pin=C8-1
+Removed Pin From Net: NetName=GND Pin=C8-2
+Removed Pin From Net: NetName=3V3 Pin=C11-1
+Removed Pin From Net: NetName=GND Pin=C11-2
+Removed Pin From Net: NetName=3V3 Pin=C12-1
+Removed Pin From Net: NetName=GND Pin=C12-2
+Removed Pin From Net: NetName=12V/1 Pin=C13-1
+Removed Pin From Net: NetName=GND Pin=C13-2
+Removed Pin From Net: NetName=12V/2 Pin=C14-1
+Removed Pin From Net: NetName=GND Pin=C14-2
+Removed Pin From Net: NetName=12V/1 Pin=C15-1
+Removed Pin From Net: NetName=GND Pin=C15-2
+Removed Pin From Net: NetName=12V/2 Pin=C16-1
+Removed Pin From Net: NetName=GND Pin=C16-2
+Removed Pin From Net: NetName=5V Pin=D3-2
+Removed Pin From Net: NetName=GND Pin=D6-2
+Removed Pin From Net: NetName=motor 1 Pin=IC1-1
+Removed Pin From Net: NetName=motor 1 Pin=IC1-2
+Removed Pin From Net: NetName=GND Pin=IC1-3
+Removed Pin From Net: NetName=GND Pin=IC1-4
+Removed Pin From Net: NetName=motor 2 Pin=IC1-5
+Removed Pin From Net: NetName=motor 2 Pin=IC1-6
+Removed Pin From Net: NetName=motor 3 Pin=IC1-7
+Removed Pin From Net: NetName=motor 3 Pin=IC1-8
+Removed Pin From Net: NetName=GND Pin=IC1-9
+Removed Pin From Net: NetName=GND Pin=IC1-10
+Removed Pin From Net: NetName=motor 4 Pin=IC1-11
+Removed Pin From Net: NetName=motor 4 Pin=IC1-12
+Removed Pin From Net: NetName=12V/1 Pin=IC1-13
+Removed Pin From Net: NetName=12V/1 Pin=IC1-14
+Removed Pin From Net: NetName=33 Pin=IC1-15
+Removed Pin From Net: NetName=25 Pin=IC1-16
+Removed Pin From Net: NetName=26 Pin=IC1-17
+Removed Pin From Net: NetName=GND Pin=IC1-18
+Removed Pin From Net: NetName=3V3 Pin=IC1-19
+Removed Pin From Net: NetName=3V3 Pin=IC1-20
+Removed Pin From Net: NetName=27 Pin=IC1-21
+Removed Pin From Net: NetName=14 Pin=IC1-22
+Removed Pin From Net: NetName=13 Pin=IC1-23
+Removed Pin From Net: NetName=12V/1 Pin=IC1-24
+Removed Pin From Net: NetName=motor 5 Pin=IC2-1
+Removed Pin From Net: NetName=motor 5 Pin=IC2-2
+Removed Pin From Net: NetName=GND Pin=IC2-3
+Removed Pin From Net: NetName=GND Pin=IC2-4
+Removed Pin From Net: NetName=motor 6 Pin=IC2-5
+Removed Pin From Net: NetName=motor 6 Pin=IC2-6
+Removed Pin From Net: NetName=motor 7 Pin=IC2-7
+Removed Pin From Net: NetName=motor 7 Pin=IC2-8
+Removed Pin From Net: NetName=GND Pin=IC2-9
+Removed Pin From Net: NetName=GND Pin=IC2-10
+Removed Pin From Net: NetName=motor 8 Pin=IC2-11
+Removed Pin From Net: NetName=motor 8 Pin=IC2-12
+Removed Pin From Net: NetName=12V/2 Pin=IC2-13
+Removed Pin From Net: NetName=12V/2 Pin=IC2-14
+Removed Pin From Net: NetName=4 Pin=IC2-15
+Removed Pin From Net: NetName=16 Pin=IC2-16
+Removed Pin From Net: NetName=17 Pin=IC2-17
+Removed Pin From Net: NetName=GND Pin=IC2-18
+Removed Pin From Net: NetName=3V3 Pin=IC2-19
+Removed Pin From Net: NetName=3V3 Pin=IC2-20
+Removed Pin From Net: NetName=5 Pin=IC2-21
+Removed Pin From Net: NetName=18 Pin=IC2-22
+Removed Pin From Net: NetName=19 Pin=IC2-23
+Removed Pin From Net: NetName=12V/2 Pin=IC2-24
+Removed Pin From Net: NetName=GND Pin=J2-1
+Removed Pin From Net: NetName=TX Pin=J2-2
+Removed Pin From Net: NetName=RX Pin=J2-3
+Removed Pin From Net: NetName=GND Pin=J4-1
+Removed Pin From Net: NetName=0 Pin=J5-2
+Removed Pin From Net: NetName=GND Pin=R3-1
+Removed Pin From Net: NetName=5V Pin=R8-2
+Removed Pin From Net: NetName=5V Pin=T3-3
+Removed Pin From Net: NetName=GND Pin=U1-2
+Removed Member From Class: ClassName=Sheet Member=BT3
+Removed Member From Class: ClassName=Sheet Member=C1
+Removed Member From Class: ClassName=Sheet Member=C8
+Removed Member From Class: ClassName=Sheet Member=C11
+Removed Member From Class: ClassName=Sheet Member=C12
+Removed Member From Class: ClassName=Sheet Member=C13
+Removed Member From Class: ClassName=Sheet Member=C14
+Removed Member From Class: ClassName=Sheet Member=C15
+Removed Member From Class: ClassName=Sheet Member=C16
+Removed Member From Class: ClassName=Sheet Member=D3
+Removed Member From Class: ClassName=Sheet Member=D6
+Removed Member From Class: ClassName=Sheet Member=IC1
+Removed Member From Class: ClassName=Sheet Member=IC2
+Removed Member From Class: ClassName=Sheet Member=J2
+Removed Member From Class: ClassName=Sheet Member=J4
+Removed Member From Class: ClassName=Sheet Member=L1
+Removed Member From Class: ClassName=Sheet Member=R3
+Removed Member From Class: ClassName=Sheet Member=R8
+Removed Member From Class: ClassName=Sheet Member=T3
+Removed Member From Class: ClassName=Sheet Member=U1
+Added Component: Designator=BT?(BAT_1042P)
+Add component (AddParameter): Name = "Check_prices"; Value = "https://www.snapeda.com/parts/1042P/Keystone/view-part/?ref=eda"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "MF"; Value = "Keystone Electronics"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "MP"; Value = "1042P"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Package"; Value = "None"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "SnapEDA_Link"; Value = "https://www.snapeda.com/parts/1042P/Keystone/view-part/?ref=snap"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Value"; Value = ""; VariantName = "[No Variations]"
+Add Pin To Net: Unknown Pin: Pin *-7
+Add Pin To Net: Unknown Pin: Pin *-7
+Add Pin To Net: Unknown Pin: Pin *-8
+Add Pin To Net: Unknown Pin: Pin *-8
+Add Pin To Net: Unknown Pin: Pin *-10
+Add Pin To Net: Unknown Pin: Pin *-10
+Add Pin To Net: Unknown Pin: Pin *-11
+Add Pin To Net: Unknown Pin: Pin *-11
+Add Pin To Net: Unknown Pin: Pin *-12
+Add Pin To Net: Unknown Pin: Pin *-12
+Add Pin To Net: Unknown Pin: Pin *-13
+Add Pin To Net: Unknown Pin: Pin *-13
+Added Pin To Net: NetName=GND Pin=BT?-N
+Added Pin To Net: NetName=NetBT2_N2 Pin=BT?-P
+Added Pin To Net: NetName=5 Pin=J5-2
+Added Net: Name=NetLabel107
+Added Net: Name=NetLabel108
+Added Net: Name=NetLabel109
+Added Net: Name=NetLabel110
+Added Net: Name=NetLabel111
+Added Net: Name=NetLabel112
+Added Net: Name=NetLabel119
+Added Net: Name=NetLabel120
+Added Net: Name=NetLabel121
+Added Net: Name=NetLabel122
+Added Net: Name=NetLabel123
+Added Net: Name=NetLabel124
+Add Class Member: Failed to add class member : Component * Motor L298N
+Add Class Member: Failed to add class member : Component * Motor L298N
+Added Member To Class: ClassName=Sheet Member=Component BT? 1042P
+Added Room: Name=Sheet

@@ -1,0 +1,6 @@
+Removed Pin From Net: NetName=12V/1 Pin=P1-7
+Removed Pin From Net: NetName=12V/2 Pin=P2-7
+Change Component Description : Designator=BT2 Old Description=SMT Polarized Battery Holder for 18650 Battery New Description=SMT Polarized Battery Holder for 18650 Battery | Keystone Electronics 1042P
+Added Pin To Net: NetName=12V/2 Pin=P1-7
+Added Pin To Net: NetName=12V/1 Pin=P2-7
+Added Room: Name=Sheet

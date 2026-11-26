@@ -1,0 +1,37 @@
+Remove Pin from Net: Failed to remove Pin
+Removed Pin From Net: NetName=33 Pin=*-1
+Remove Pin from Net: Failed to remove Pin
+Removed Pin From Net: NetName=25 Pin=*-2
+Remove Pin from Net: Failed to remove Pin
+Removed Pin From Net: NetName=26 Pin=*-3
+Remove Pin from Net: Failed to remove Pin
+Removed Pin From Net: NetName=27 Pin=*-4
+Removed Pin From Net: NetName=14 Pin=*-5
+Remove Pin from Net: Failed to remove Pin
+Remove Pin from Net: Failed to remove Pin
+Removed Pin From Net: NetName=13 Pin=*-6
+Removed Pin From Net: NetName=12V/1 Pin=*-7
+Remove Pin from Net: Failed to remove Pin
+Removed Pin From Net: NetName=GND Pin=*-8
+Remove Pin from Net: Failed to remove Pin
+Removed Member From Class: ClassName=Sheet Member=*
+Added Component: Designator=P1(L298N_Module)
+Added Component: Designator=P2(L298N_Module)
+Added Pin To Net: NetName=33 Pin=P1-1
+Added Pin To Net: NetName=25 Pin=P1-2
+Added Pin To Net: NetName=26 Pin=P1-3
+Added Pin To Net: NetName=27 Pin=P1-4
+Added Pin To Net: NetName=14 Pin=P1-5
+Added Pin To Net: NetName=13 Pin=P1-6
+Added Pin To Net: NetName=12V/1 Pin=P1-7
+Added Pin To Net: NetName=GND Pin=P1-8
+Added Pin To Net: NetName=19 Pin=P2-1
+Added Pin To Net: NetName=18 Pin=P2-2
+Added Pin To Net: NetName=5 Pin=P2-3
+Added Pin To Net: NetName=17 Pin=P2-4
+Added Pin To Net: NetName=16 Pin=P2-5
+Added Pin To Net: NetName=4 Pin=P2-6
+Added Pin To Net: NetName=12V/2 Pin=P2-7
+Added Pin To Net: NetName=GND Pin=P2-8
+Added Member To Class: ClassName=Sheet Member=Component P1 Motor L298N
+Added Member To Class: ClassName=Sheet Member=Component P2 Motor L298N

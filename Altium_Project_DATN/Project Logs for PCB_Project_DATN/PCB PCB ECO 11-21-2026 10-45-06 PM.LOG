@@ -1,0 +1,21 @@
+Added Component: Designator=*(L298N_Module)
+Added Component: Designator=*(L298N_Module)
+Added Pin To Net: NetName=19 Pin=*-1
+Added Pin To Net: NetName=33 Pin=*-1
+Added Pin To Net: NetName=18 Pin=*-2
+Added Pin To Net: NetName=25 Pin=*-2
+Added Pin To Net: NetName=5 Pin=*-3
+Added Pin To Net: NetName=26 Pin=*-3
+Added Pin To Net: NetName=17 Pin=*-4
+Added Pin To Net: NetName=27 Pin=*-4
+Added Pin To Net: NetName=14 Pin=*-5
+Added Pin To Net: NetName=16 Pin=*-5
+Added Pin To Net: NetName=4 Pin=*-6
+Added Pin To Net: NetName=13 Pin=*-6
+Added Pin To Net: NetName=12V/1 Pin=*-7
+Added Pin To Net: NetName=12V/2 Pin=*-7
+Added Pin To Net: NetName=GND Pin=*-8
+Added Pin To Net: NetName=GND Pin=*-8
+Added Member To Class: ClassName=Sheet Member=Component * Motor L298N
+Added Member To Class: ClassName=Sheet Member=Component * Motor L298N
+Added Room: Name=Sheet

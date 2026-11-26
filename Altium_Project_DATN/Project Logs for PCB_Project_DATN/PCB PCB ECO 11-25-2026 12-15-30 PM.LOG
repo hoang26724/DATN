@@ -1,0 +1,20 @@
+Removed Pin From Net: NetName=19 Pin=P2-1
+Removed Pin From Net: NetName=18 Pin=P2-2
+Removed Pin From Net: NetName=5 Pin=P2-3
+Removed Pin From Net: NetName=17 Pin=P2-4
+Removed Pin From Net: NetName=16 Pin=P2-5
+Removed Pin From Net: NetName=4 Pin=P2-6
+Removed Pin From Net: NetName=12V/1 Pin=P2-7
+Removed Pin From Net: NetName=GND Pin=P2-8
+Removed Member From Class: ClassName=Sheet Member=P2
+Added Component: Designator=D(L298N_Module)
+Added Pin To Net: NetName=19 Pin=D-1
+Added Pin To Net: NetName=18 Pin=D-2
+Added Pin To Net: NetName=5 Pin=D-3
+Added Pin To Net: NetName=17 Pin=D-4
+Added Pin To Net: NetName=16 Pin=D-5
+Added Pin To Net: NetName=4 Pin=D-6
+Added Pin To Net: NetName=12V/1 Pin=D-7
+Added Pin To Net: NetName=GND Pin=D-8
+Added Member To Class: ClassName=Sheet Member=Component D Motor L298N
+Added Room: Name=Sheet

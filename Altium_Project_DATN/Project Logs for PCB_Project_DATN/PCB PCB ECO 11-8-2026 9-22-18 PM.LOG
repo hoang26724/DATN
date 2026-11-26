@@ -1,0 +1,16 @@
+Removed Pin From Net: NetName=PIN1 Pin=BT1-P1
+Removed Pin From Net: NetName=GND Pin=BT2-N1
+Removed Pin From Net: NetName=PIN2 Pin=BT2-N2
+Removed Pin From Net: NetName=GND Pin=BT3-P1
+Added Pin To Net: NetName=GND Pin=BT1-N2
+Added Pin To Net: NetName=PIN2 Pin=BT1-P1
+Added Pin To Net: NetName=PIN1 Pin=BT2-P1
+Added Pin To Net: NetName=GND Pin=BT3-N1
+Added Pin To Net: NetName=NetBT2_N1 Pin=BT2-N1
+Added Pin To Net: NetName=NetBT2_N1 Pin=BT2-P2
+Added Net: Name=NetBT2_N1
+Added Pin To Net: NetName=NetBT2_N2 Pin=BT2-N2
+Added Pin To Net: NetName=NetBT2_N2 Pin=BT3-P1
+Added Net: Name=NetBT2_N2
+Added Member To Class: ClassName=Sheet Member=Component BT1 1048P
+Added Room: Name=Sheet

@@ -1,0 +1,57 @@
+Removed Pin From Net: NetName=12V/2 Pin=*-7
+Removed Pin From Net: NetName=GND Pin=*-8
+Removed Pin From Net: NetName=motor 8 Pin=*-10
+Removed Pin From Net: NetName=motor 7 Pin=*-11
+Removed Pin From Net: NetName=motor 6 Pin=*-12
+Removed Pin From Net: NetName=motor 5 Pin=*-13
+Removed Pin From Net: NetName=12V/1 Pin=1-7
+Removed Pin From Net: NetName=GND Pin=1-8
+Removed Pin From Net: NetName=motor 4 Pin=1-10
+Removed Pin From Net: NetName=motor 3 Pin=1-11
+Removed Pin From Net: NetName=motor 2 Pin=1-12
+Removed Pin From Net: NetName=motor 1 Pin=1-13
+Removed Pin From Net: NetName=5V Pin=D7-1
+Removed Pin From Net: NetName=GND Pin=J5-1
+Removed Pin From Net: NetName=5 Pin=J5-2
+Removed Member From Class: ClassName=Sheet Member=1
+Removed Member From Class: ClassName=Sheet Member=D7
+Removed Member From Class: ClassName=Sheet Member=J5
+Change Component Comment : Designator=R10 Old Comment=1k New Comment=470
+Change Component Designator: OldDesignator=BT1 NewDesignator=BT2
+Change Component Designator: OldDesignator=BT1 NewDesignator=BT3
+Change Component Designator: OldDesignator=BT2 NewDesignator=BT1
+Change Component Designator: OldDesignator=C2 NewDesignator=C1
+Change Component Designator: OldDesignator=C3 NewDesignator=C2
+Change Component Designator: OldDesignator=C4 NewDesignator=C3
+Change Component Designator: OldDesignator=C5 NewDesignator=C4
+Change Component Designator: OldDesignator=C6 NewDesignator=C5
+Change Component Designator: OldDesignator=C7 NewDesignator=C6
+Change Component Designator: OldDesignator=C9 NewDesignator=C7
+Change Component Designator: OldDesignator=C10 NewDesignator=C8
+Change Component Designator: OldDesignator=D4 NewDesignator=D3
+Change Component Designator: OldDesignator=D5 NewDesignator=D4
+Change Component Designator: OldDesignator=D9 NewDesignator=D5
+Change Component Designator: OldDesignator=J3 NewDesignator=J2
+Change Component Designator: OldDesignator=L2 NewDesignator=L1
+Change Component Designator: OldDesignator=L3 NewDesignator=L2
+Change Component Designator: OldDesignator=L8 NewDesignator=L3
+Change Component Designator: OldDesignator=R4 NewDesignator=R3
+Change Component Designator: OldDesignator=R5 NewDesignator=R4
+Change Component Designator: OldDesignator=R6 NewDesignator=R5
+Change Component Designator: OldDesignator=R7 NewDesignator=R6
+Change Component Designator: OldDesignator=R9 NewDesignator=R7
+Change Component Designator: OldDesignator=R10 NewDesignator=R8
+Change Component Designator: OldDesignator=U2 NewDesignator=U1
+Change Component Description : Designator=BT2 Old Description=SMT Polarized Battery Holder for 18650 Battery New Description=SMT Polarized Battery Holder for 18650 Battery | Keystone Electronics 1042P
+Added Pin To Net: NetName=5V Pin=U1-19
+Change Net Name : Old Net Name=NetBT1_N1 New Net Name=NetBT3_N1
+Change Net Name : Old Net Name=NetBT2_N1 New Net Name=NetBT1_N1
+Change Net Name : Old Net Name=NetBT2_N2 New Net Name=NetBT1_N2
+Change Net Name : Old Net Name=NetD4_1 New Net Name=NetD3_1
+Change Net Name : Old Net Name=NetD5_1 New Net Name=NetD4_1
+Change Net Name : Old Net Name=NetD9_A New Net Name=NetD5_A
+Change Net Name : Old Net Name=NetL8_2 New Net Name=NetL3_2
+Change Net Name : Old Net Name=NetR4_1 New Net Name=NetR3_1
+Change Net Name : Old Net Name=NetR6_1 New Net Name=NetR5_1
+Added Member To Class: ClassName=Sheet Member=Component BT3 1048P
+Added Room: Name=Sheet
