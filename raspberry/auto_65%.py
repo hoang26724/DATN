@@ -10,13 +10,13 @@ File nay thay the pickleball.py khi muon xe tu tim bong:
 - Van phuc vu /stream.mjpg va /stats de app Flutter hien thi hinh camera.
 - Nhan dien bong pickleball bang NCNN va ve khung bong len hinh.
 - Dieu khien ESP32 qua USB (CP2102, mac dinh /dev/ttyUSB0, 115200 8N1):
-    * Khong thay bong -> gui "r65" + "R" lap lai (quay phai 65%).
+    * Khong thay bong -> gui "r80" + "R" lap lai (quay phai 80%).
     * Thay bong -> chi quay "L"/"R" tai cho de dua tam bong vao vung 85-95 do
       (khung hinh tinh theo goc: mep trai 0 do, chinh dien 90 do, mep phai
       180 do). Khong tien toi khi bong con lech.
     * Bong trong vung 85-95 do -> dung yen giu tam ~1 s cho xe on dinh, sau do
       moi gui "F" de tien toi va "G1" de bat hut, giu den khi bong mat khoi
-      khung hinh; xe dung lai nhung van hut them ~1 s roi moi quay tim.
+      khung hinh; xe van tien va hut them ~1 s roi moi dung lai va quay tim.
     * Luon bat relay GPIO 32 ("Y1") trong suot thoi gian chay.
 
 Luu y: firmware trong esp32/src/main.cpp doc lenh tren ca Bluetooth lan USB
@@ -60,12 +60,12 @@ SERIAL_BAUDRATE = 115200
 SERIAL_RETRY_S = 2.0
 
 # Search behaviour: while no ball is visible, keep the rear drive turning right
-# at 65%. The firmware stops the motors after 600 ms without a byte, so the
+# at 80%. The firmware stops the motors after 600 ms without a byte, so the
 # turn command must be re-sent faster than that.
-SEARCH_SPEED = 65
+SEARCH_SPEED = 80
 DRIVE_KEEPALIVE_S = 0.2
-# Re-send "r65" occasionally so a speed change made from the app cannot make
-# the search turn faster or slower than 65%.
+# Re-send "r80" occasionally so a speed change made from the app cannot make
+# the search turn faster or slower than 80%.
 SPEED_REFRESH_S = 1.0
 # A single missed detection must not make the robot stutter, so wait a moment
 # after the last visible ball before starting the search again.
@@ -84,10 +84,11 @@ BALL_ALIGN_MAX_DEG = 95.0
 # long before driving forward, so any residual rotation has settled and the
 # ball is confirmed centred. If the ball leaves the band, alignment resumes.
 CENTER_HOLD_S = 1.0
-TRACK_TURN_SPEED = 35
-APPROACH_SPEED = 60
-# Once the ball is gone from frame, keep the brush spinning a little longer to
-# finish pulling it into the intake before giving up and searching again.
+TRACK_TURN_SPEED = 65
+APPROACH_SPEED = 70
+# Once the ball is gone from frame, keep driving forward with the brush
+# spinning for another second so the ball is pulled into the intake, then stop
+# and search again.
 SUCTION_AFTER_LOSS_S = 1.0
 BRUSH_KEEPALIVE_S = 1.0
 
@@ -137,7 +138,7 @@ PAGE = """\
 <body>
 <main>
   <h1>Robot Pickleball - Auto</h1>
-  <p>Khong thay bong: quay phai 65%. Thay bong: quay trai/phai tai cho 35% de dua tam bong vao vung 85-95 do, dung yen ~1 s roi moi tien toi va hut; mat bong van hut them ~1 s roi moi tim lai.</p>
+  <p>Khong thay bong: quay phai 80%. Thay bong: quay trai/phai tai cho 35% de dua tam bong vao vung 85-95 do, dung yen ~1 s roi moi tien toi va hut; mat bong van tien va hut them ~1 s roi moi tim lai.</p>
   <div class="frame"><img src="stream.mjpg" width="640" height="480" alt="Camera AI"></div>
   <div class="stats">
     <span class="stat">Pickleball <b id="stat-ball">0</b></span>
@@ -344,14 +345,6 @@ def draw_detection(frame, box, label, confidence, color):
     )
 
 
-def draw_stats(frame, fps):
-    panel = frame.copy()
-    cv2.rectangle(panel, (10, 10), (170, 50), (12, 22, 36), -1)
-    cv2.addWeighted(panel, 0.78, frame, 0.22, 0, frame)
-    font = cv2.FONT_HERSHEY_SIMPLEX
-    cv2.putText(frame, f'FPS: {fps:.1f}', (24, 38), font, 0.58, (94, 231, 247), 2, cv2.LINE_AA)
-
-
 def ball_angle_deg(centre_x, frame_width):
     """Map a pixel column to the on-screen 0..180 deg scale (90 = straight)."""
     if frame_width <= 0:
@@ -374,21 +367,9 @@ def draw_alignment_guide(frame, target_angle=None):
     color = (0, 255, 0) if aligned else (0, 0, 255)
     overlay = frame.copy()
     cv2.rectangle(overlay, (x_min, 0), (x_max, frame_height - 1), color, -1)
-    cv2.addWeighted(overlay, 0.14, frame, 0.86, 0, frame)
-    cv2.line(frame, (x_min, 0), (x_min, frame_height - 1), color, 2)
-    cv2.line(frame, (x_max, 0), (x_max, frame_height - 1), color, 2)
-    font = cv2.FONT_HERSHEY_SIMPLEX
-    cv2.putText(frame, '85', (max(0, x_min - 26), 18), font, 0.45, color, 1, cv2.LINE_AA)
-    cv2.putText(
-        frame,
-        '95',
-        (min(frame_width - 18, x_max + 4), 18),
-        font,
-        0.45,
-        color,
-        1,
-        cv2.LINE_AA,
-    )
+    cv2.addWeighted(overlay, 0.08, frame, 0.92, 0, frame)
+    cv2.line(frame, (x_min, 0), (x_min, frame_height - 1), color, 1, cv2.LINE_AA)
+    cv2.line(frame, (x_max, 0), (x_max, frame_height - 1), color, 1, cv2.LINE_AA)
 
 
 def draw_ball_center(frame, centre_x, centre_y, angle):
@@ -554,6 +535,8 @@ def camera_worker(pickleball_detector, drive_link, relay_bootstrap_stop=None):
             drive_link.stop()
         elif mode == 'approach':
             drive_link.forward()
+        elif mode == 'suck_only':
+            drive_link.forward()
 
     while True:
         request = None
@@ -674,11 +657,15 @@ def camera_worker(pickleball_detector, drive_link, relay_bootstrap_stop=None):
                         CENTER_HOLD_S,
                     )
                 elif drive_mode == 'suck_only':
-                    drive_link.stop()
                     drive_link.suction_on()
+                    drive_link.set_drive_speed(APPROACH_SPEED)
+                    drive_link.forward()
                     suck_until = now + SUCTION_AFTER_LOSS_S
                     last_brush_at = now
-                    logging.info('Mat bong - van hut them %.1f s', SUCTION_AFTER_LOSS_S)
+                    logging.info(
+                        'Mat bong - van tien va hut them %.1f s',
+                        SUCTION_AFTER_LOSS_S,
+                    )
                 else:
                     drive_link.suction_on()
                     drive_link.set_drive_speed(APPROACH_SPEED)
@@ -702,6 +689,8 @@ def camera_worker(pickleball_detector, drive_link, relay_bootstrap_stop=None):
                         speed = TRACK_TURN_SPEED
                     elif drive_mode == 'approach':
                         speed = APPROACH_SPEED
+                    elif drive_mode == 'suck_only':
+                        speed = APPROACH_SPEED
                     else:
                         speed = None
                     if speed is not None:
@@ -709,7 +698,7 @@ def camera_worker(pickleball_detector, drive_link, relay_bootstrap_stop=None):
                     last_speed_at = now
                 if drive_mode in ('approach', 'suck_only') and now - last_brush_at >= BRUSH_KEEPALIVE_S:
                     drive_link.suction_on()
-                    if drive_mode == 'approach':
+                    if drive_mode in ('approach', 'suck_only'):
                         drive_link.forward()
                         last_command_at = now
                     last_brush_at = now
@@ -721,7 +710,6 @@ def camera_worker(pickleball_detector, drive_link, relay_bootstrap_stop=None):
                 frame_count = 0
                 fps_start_time = now
 
-            draw_stats(frame, fps)
             if drive_mode == 'hold_center':
                 hold_left = max(0.0, CENTER_HOLD_S - (now - align_hold_since))
                 cv2.putText(
