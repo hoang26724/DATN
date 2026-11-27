@@ -1,19 +1,22 @@
-#!/usr/bin/env python3
+
+
 """
 Camera AI + Pickleball auto-search cho Raspberry Pi 5.
 
-Chay: python3 auto.py
+Chay: python3 auto_65%.py
 Xem: http://<IP_CUA_PI>:8000/
 
 File nay thay the pickleball.py khi muon xe tu tim bong:
 - Van phuc vu /stream.mjpg va /stats de app Flutter hien thi hinh camera.
 - Nhan dien bong pickleball bang NCNN va ve khung bong len hinh.
 - Dieu khien ESP32 qua USB (CP2102, mac dinh /dev/ttyUSB0, 115200 8N1):
-    * Khong thay bong -> gui "r50" + "R" lap lai (quay phai 50%).
-    * Thay bong lech trai/phai -> van tien cham, xen ke "F" va "L"/"R" de dua
-      bong vao giua khung truoc.
-    * Bong o giua -> gui "F" de tien toi va "G1" de bat hut, giu den khi bong
-      mat khoan khung hinh; xe dung lai nhung van hut them ~1 s roi moi quay tim.
+    * Khong thay bong -> gui "r65" + "R" lap lai (quay phai 65%).
+    * Thay bong -> chi quay "L"/"R" tai cho de dua tam bong vao vung 85-95 do
+      (khung hinh tinh theo goc: mep trai 0 do, chinh dien 90 do, mep phai
+      180 do). Khong tien toi khi bong con lech.
+    * Bong trong vung 85-95 do -> dung yen giu tam ~1 s cho xe on dinh, sau do
+      moi gui "F" de tien toi va "G1" de bat hut, giu den khi bong mat khoi
+      khung hinh; xe dung lai nhung van hut them ~1 s roi moi quay tim.
     * Luon bat relay GPIO 32 ("Y1") trong suot thoi gian chay.
 
 Luu y: firmware trong esp32/src/main.cpp doc lenh tren ca Bluetooth lan USB
@@ -57,12 +60,12 @@ SERIAL_BAUDRATE = 115200
 SERIAL_RETRY_S = 2.0
 
 # Search behaviour: while no ball is visible, keep the rear drive turning right
-# at 50%. The firmware stops the motors after 600 ms without a byte, so the
+# at 65%. The firmware stops the motors after 600 ms without a byte, so the
 # turn command must be re-sent faster than that.
-SEARCH_SPEED = 50
+SEARCH_SPEED = 65
 DRIVE_KEEPALIVE_S = 0.2
-# Re-send "r50" occasionally so a speed change made from the app cannot make
-# the search turn faster or slower than 50%.
+# Re-send "r65" occasionally so a speed change made from the app cannot make
+# the search turn faster or slower than 65%.
 SPEED_REFRESH_S = 1.0
 # A single missed detection must not make the robot stutter, so wait a moment
 # after the last visible ball before starting the search again.
@@ -71,12 +74,18 @@ BALL_LOST_GRACE_S = 0.3
 # COMMAND_TIMEOUT_MS without a byte, so it must be refreshed.
 RELAY_KEEPALIVE_S = 0.2
 
-# Ball tracking: creep forward while steering towards the ball until it is
-# centred, then keep driving straight with suction until the ball leaves frame.
-BALL_CENTER_BAND = 0.15
-TRACK_TURN_SPEED = 50
+# Ball tracking: the camera frame spans 0 deg (left edge) to 180 deg (right
+# edge), so straight ahead is 90 deg. Rotate in place until the ball centre is
+# inside the 85-95 deg band; only then drive forward and suck. Moving forward
+# while the ball is still off-centre makes the intake miss it.
+BALL_ALIGN_MIN_DEG = 85.0
+BALL_ALIGN_MAX_DEG = 95.0
+# Once the ball is inside the band, stop the chassis and hold it there for this
+# long before driving forward, so any residual rotation has settled and the
+# ball is confirmed centred. If the ball leaves the band, alignment resumes.
+CENTER_HOLD_S = 1.0
+TRACK_TURN_SPEED = 35
 APPROACH_SPEED = 60
-TRACK_STEP_S = 0.1
 # Once the ball is gone from frame, keep the brush spinning a little longer to
 # finish pulling it into the intake before giving up and searching again.
 SUCTION_AFTER_LOSS_S = 1.0
@@ -128,7 +137,7 @@ PAGE = """\
 <body>
 <main>
   <h1>Robot Pickleball - Auto</h1>
-  <p>Khong thay bong: quay phai 50%. Thay bong: tien cham ma van chinh huong de dua bong vao giua; bong o giua: tien toi va hut, mat bong van hut them ~1 s roi moi tim lai.</p>
+  <p>Khong thay bong: quay phai 65%. Thay bong: quay trai/phai tai cho 35% de dua tam bong vao vung 85-95 do, dung yen ~1 s roi moi tien toi va hut; mat bong van hut them ~1 s roi moi tim lai.</p>
   <div class="frame"><img src="stream.mjpg" width="640" height="480" alt="Camera AI"></div>
   <div class="stats">
     <span class="stat">Pickleball <b id="stat-ball">0</b></span>
@@ -343,6 +352,72 @@ def draw_stats(frame, fps):
     cv2.putText(frame, f'FPS: {fps:.1f}', (24, 38), font, 0.58, (94, 231, 247), 2, cv2.LINE_AA)
 
 
+def ball_angle_deg(centre_x, frame_width):
+    """Map a pixel column to the on-screen 0..180 deg scale (90 = straight)."""
+    if frame_width <= 0:
+        return 90.0
+    return max(0.0, min(180.0, centre_x / frame_width * 180.0))
+
+
+def ball_in_center_band(angle):
+    return BALL_ALIGN_MIN_DEG <= angle <= BALL_ALIGN_MAX_DEG
+
+
+def draw_alignment_guide(frame, target_angle=None):
+    """Draw the two guide bars that delimit the 85-95 deg centre band."""
+    frame_height, frame_width = frame.shape[:2]
+    x_min = int(round(frame_width * BALL_ALIGN_MIN_DEG / 180.0))
+    x_max = int(round(frame_width * BALL_ALIGN_MAX_DEG / 180.0))
+    x_min = max(0, min(x_min, frame_width - 1))
+    x_max = max(0, min(x_max, frame_width - 1))
+    aligned = target_angle is not None and ball_in_center_band(target_angle)
+    color = (0, 255, 0) if aligned else (0, 0, 255)
+    overlay = frame.copy()
+    cv2.rectangle(overlay, (x_min, 0), (x_max, frame_height - 1), color, -1)
+    cv2.addWeighted(overlay, 0.14, frame, 0.86, 0, frame)
+    cv2.line(frame, (x_min, 0), (x_min, frame_height - 1), color, 2)
+    cv2.line(frame, (x_max, 0), (x_max, frame_height - 1), color, 2)
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    cv2.putText(frame, '85', (max(0, x_min - 26), 18), font, 0.45, color, 1, cv2.LINE_AA)
+    cv2.putText(
+        frame,
+        '95',
+        (min(frame_width - 18, x_max + 4), 18),
+        font,
+        0.45,
+        color,
+        1,
+        cv2.LINE_AA,
+    )
+
+
+def draw_ball_center(frame, centre_x, centre_y, angle):
+    """Mark the ball centre and print its angle on the guide scale."""
+    frame_height, frame_width = frame.shape[:2]
+    cx = max(0, min(int(round(centre_x)), frame_width - 1))
+    cy = max(0, min(int(round(centre_y)), frame_height - 1))
+    color = (0, 255, 0) if ball_in_center_band(angle) else (0, 0, 255)
+    cv2.circle(frame, (cx, cy), 4, color, -1)
+    cv2.line(frame, (cx - 12, cy), (cx + 12, cy), color, 1)
+    cv2.line(frame, (cx, cy - 12), (cx, cy + 12), color, 1)
+    text = f'{angle:.0f} deg'
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    (text_width, _), _ = cv2.getTextSize(text, font, 0.45, 1)
+    text_x = cx + 14
+    if text_x + text_width >= frame_width:
+        text_x = cx - 14 - text_width
+    cv2.putText(
+        frame,
+        text,
+        (max(0, text_x), max(14, cy - 10)),
+        font,
+        0.45,
+        color,
+        1,
+        cv2.LINE_AA,
+    )
+
+
 class NCNNPickleballDetector:
     def __init__(self, param_path, bin_path):
         for path in (param_path, bin_path):
@@ -462,7 +537,7 @@ def camera_worker(pickleball_detector, drive_link, relay_bootstrap_stop=None):
 
     last_ball_at = time.monotonic()
     drive_mode = None
-    align_forward_next = False
+    align_hold_since = 0.0
     last_command_at = 0.0
     last_speed_at = 0.0
     last_brush_at = 0.0
@@ -475,6 +550,8 @@ def camera_worker(pickleball_detector, drive_link, relay_bootstrap_stop=None):
             drive_link.turn_right()
         elif mode == 'align_left':
             drive_link.turn_left()
+        elif mode == 'hold_center':
+            drive_link.stop()
         elif mode == 'approach':
             drive_link.forward()
 
@@ -492,6 +569,16 @@ def camera_worker(pickleball_detector, drive_link, relay_bootstrap_stop=None):
                 logging.warning('Loi nhan dien pickleball NCNN: %s', exc)
                 detections = []
 
+            frame_width = frame.shape[1]
+            ball_angle = None
+            if detections:
+                best = max(detections, key=lambda detection: detection[4])
+                best_centre_x = (best[0] + best[2]) / 2.0
+                ball_angle = ball_angle_deg(best_centre_x, frame_width)
+
+            # The two bars are the 85/95 deg limits of the centre band; the
+            # ball's centre is marked so the alignment can be checked visually.
+            draw_alignment_guide(frame, ball_angle)
             for x1, y1, x2, y2, confidence in detections:
                 draw_detection(
                     frame,
@@ -500,9 +587,18 @@ def camera_worker(pickleball_detector, drive_link, relay_bootstrap_stop=None):
                     confidence,
                     (0, 255, 255),
                 )
+                centre_x = (x1 + x2) / 2.0
+                centre_y = (y1 + y2) / 2.0
+                draw_ball_center(
+                    frame,
+                    centre_x,
+                    centre_y,
+                    ball_angle_deg(centre_x, frame_width),
+                )
 
-            # Keep the firmware's 600 ms watchdog fed; alignment alternates
-            # forward and turn commands so the robot creeps towards the ball.
+            # Keep the firmware's 600 ms watchdog fed. While aligning, only
+            # turn commands are sent; once the ball is inside the 85-95 deg
+            # band the robot stands still for CENTER_HOLD_S before approaching.
             now = time.monotonic()
             if now - last_relay_at >= RELAY_KEEPALIVE_S:
                 drive_link.relay_on()
@@ -517,33 +613,30 @@ def camera_worker(pickleball_detector, drive_link, relay_bootstrap_stop=None):
                 last_ball_at = now
                 if drive_mode == 'suck_only' and now < suck_until:
                     requested_mode = 'suck_only'
-                else:
-                    best = max(detections, key=lambda detection: detection[4])
-                    centre_x = (best[0] + best[2]) / 2.0
-                    half_width = CAM_SIZE[0] / 2.0
-                    ball_offset = max(-1.0, min(1.0, (centre_x - half_width) / half_width))
-                    if drive_mode == 'approach':
+                elif ball_angle < BALL_ALIGN_MIN_DEG:
+                    requested_mode = 'align_left'
+                elif ball_angle > BALL_ALIGN_MAX_DEG:
+                    requested_mode = 'align_right'
+                elif drive_mode == 'approach':
+                    requested_mode = 'approach'
+                elif drive_mode == 'hold_center':
+                    if now - align_hold_since >= CENTER_HOLD_S:
                         requested_mode = 'approach'
-                    elif ball_offset < -BALL_CENTER_BAND:
-                        requested_mode = 'align_left'
-                    elif ball_offset > BALL_CENTER_BAND:
-                        requested_mode = 'align_right'
                     else:
-                        requested_mode = 'approach'
+                        requested_mode = 'hold_center'
+                else:
+                    requested_mode = 'hold_center'
             elif now - last_ball_at < BALL_LOST_GRACE_S:
                 requested_mode = drive_mode
             elif drive_mode == 'suck_only' and now < suck_until:
                 requested_mode = 'suck_only'
             elif drive_mode == 'approach':
                 requested_mode = 'suck_only'
-            elif drive_mode in ('align_left', 'align_right'):
-                requested_mode = None
             else:
                 requested_mode = 'search'
 
             if requested_mode != drive_mode:
                 drive_mode = requested_mode
-                align_forward_next = drive_mode in ('align_left', 'align_right')
                 if drive_mode is None:
                     drive_link.suction_off()
                     drive_link.stop()
@@ -558,8 +651,8 @@ def camera_worker(pickleball_detector, drive_link, relay_bootstrap_stop=None):
                     drive_link.set_drive_speed(TRACK_TURN_SPEED)
                     drive_link.turn_left()
                     logging.info(
-                        'Bong lech trai %.2f - tien cham, quay trai %d%%',
-                        ball_offset,
+                        'Bong lech trai %.0f do (can 85-95) - quay trai %d%%',
+                        ball_angle,
                         TRACK_TURN_SPEED,
                     )
                 elif drive_mode == 'align_right':
@@ -567,9 +660,18 @@ def camera_worker(pickleball_detector, drive_link, relay_bootstrap_stop=None):
                     drive_link.set_drive_speed(TRACK_TURN_SPEED)
                     drive_link.turn_right()
                     logging.info(
-                        'Bong lech phai %.2f - tien cham, quay phai %d%%',
-                        ball_offset,
+                        'Bong lech phai %.0f do (can 85-95) - quay phai %d%%',
+                        ball_angle,
                         TRACK_TURN_SPEED,
+                    )
+                elif drive_mode == 'hold_center':
+                    drive_link.suction_off()
+                    drive_link.stop()
+                    align_hold_since = now
+                    logging.info(
+                        'Bong trong vung 85-95 do (%.0f do) - dung yen giu tam %.1f s',
+                        ball_angle,
+                        CENTER_HOLD_S,
                     )
                 elif drive_mode == 'suck_only':
                     drive_link.stop()
@@ -583,21 +685,14 @@ def camera_worker(pickleball_detector, drive_link, relay_bootstrap_stop=None):
                     drive_link.forward()
                     last_brush_at = now
                     logging.info(
-                        'Bong o giua - tien toi %d%% va bat hut den khi mat bong',
+                        'Bong trong vung 85-95 do (%.0f do) - tien toi %d%% va bat hut',
+                        ball_angle,
                         APPROACH_SPEED,
                     )
                 last_command_at = now
                 last_speed_at = now
             elif drive_mode is not None:
-                if drive_mode in ('align_left', 'align_right'):
-                    if now - last_command_at >= TRACK_STEP_S:
-                        if align_forward_next:
-                            drive_link.forward()
-                        else:
-                            send_mode_command(drive_mode)
-                        align_forward_next = not align_forward_next
-                        last_command_at = now
-                elif now - last_command_at >= DRIVE_KEEPALIVE_S:
+                if now - last_command_at >= DRIVE_KEEPALIVE_S:
                     send_mode_command(drive_mode)
                     last_command_at = now
                 if now - last_speed_at >= SPEED_REFRESH_S:
@@ -605,9 +700,12 @@ def camera_worker(pickleball_detector, drive_link, relay_bootstrap_stop=None):
                         speed = SEARCH_SPEED
                     elif drive_mode in ('align_left', 'align_right'):
                         speed = TRACK_TURN_SPEED
-                    else:
+                    elif drive_mode == 'approach':
                         speed = APPROACH_SPEED
-                    drive_link.set_drive_speed(speed)
+                    else:
+                        speed = None
+                    if speed is not None:
+                        drive_link.set_drive_speed(speed)
                     last_speed_at = now
                 if drive_mode in ('approach', 'suck_only') and now - last_brush_at >= BRUSH_KEEPALIVE_S:
                     drive_link.suction_on()
@@ -624,6 +722,18 @@ def camera_worker(pickleball_detector, drive_link, relay_bootstrap_stop=None):
                 fps_start_time = now
 
             draw_stats(frame, fps)
+            if drive_mode == 'hold_center':
+                hold_left = max(0.0, CENTER_HOLD_S - (now - align_hold_since))
+                cv2.putText(
+                    frame,
+                    f'HOLD {hold_left:.1f}s',
+                    (24, 80),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.6,
+                    (0, 255, 0),
+                    2,
+                    cv2.LINE_AA,
+                )
 
             ok, jpeg = cv2.imencode(
                 '.jpg',

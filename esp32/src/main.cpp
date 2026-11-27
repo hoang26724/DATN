@@ -124,11 +124,27 @@ enum class DriveMode {
   strafeRight,
 };
 
-char commandLine[16];
-size_t commandLength = 0;
+// Which link sent the last command. The phone's link-loss stop must only fire
+// for phone-driven motion; the Pi drives over USB and has its own 600 ms
+// command timeout.
+enum class CommandSource {
+  none,
+  bluetooth,
+  usb,
+};
+
+// The phone app (Bluetooth) and the Raspberry Pi's auto.py (USB serial) both
+// speak the same line protocol. Each source gets its own buffer so a partial
+// line from one link can never splice onto a partial line from the other.
+constexpr size_t COMMAND_LINE_SIZE = 16;
+char btCommandLine[COMMAND_LINE_SIZE];
+size_t btCommandLength = 0;
+char usbCommandLine[COMMAND_LINE_SIZE];
+size_t usbCommandLength = 0;
 
 uint32_t lastCommandMs = 0;
 uint32_t lastHeartbeatMs = 0;
+CommandSource lastCommandSource = CommandSource::none;
 bool motorsRunning = false;
 bool linkAnnounced = false;
 bool relayOn = false;
@@ -146,6 +162,11 @@ void stopDrive();
 void stopForSafety(const char* reason);
 
 void setRelay(bool on) {
+  // auto.py resends "Y1" as a keep-alive; do not spam the log or re-drive the
+  // pin when the state has not changed.
+  if (relayOn == on) {
+    return;
+  }
   relayOn = on;
   digitalWrite(RELAY_PIN, on ? HIGH : LOW);
   Serial.print("[relay] ");
@@ -297,23 +318,35 @@ void stopForSafety(const char* reason) {
   Serial.println(reason);
 }
 
-void readCommands() {
-  while (serialBt.available() > 0) {
-    const char byte = static_cast<char>(serialBt.read());
+void readCommandStream(Stream& stream, char* line, size_t& length,
+                       CommandSource source) {
+  while (stream.available() > 0) {
+    const char byte = static_cast<char>(stream.read());
     if (byte == '\n' || byte == '\r') {
-      if (commandLength > 0) {
-        commandLine[commandLength] = '\0';
+      if (length > 0) {
+        line[length] = '\0';
         Serial.print("[cmd] ");
-        Serial.println(commandLine);
-        applyCommand(commandLine);
-        commandLength = 0;
+        Serial.println(line);
+        lastCommandSource = source;
+        applyCommand(line);
+        length = 0;
       }
       continue;
     }
-    if (commandLength < sizeof(commandLine) - 1) {
-      commandLine[commandLength++] = byte;
+    if (length < COMMAND_LINE_SIZE - 1) {
+      line[length++] = byte;
     }
   }
+}
+
+void readCommands() {
+  // Bluetooth is the phone app; Serial is the USB (CP2102) link the Pi's
+  // auto.py writes to. The same F/B/L/R/S, r<0-100>, G1/G0, Y1/Y0 commands
+  // work on either link.
+  readCommandStream(serialBt, btCommandLine, btCommandLength,
+                    CommandSource::bluetooth);
+  readCommandStream(Serial, usbCommandLine, usbCommandLength,
+                    CommandSource::usb);
 }
 
 void announceLink() {
@@ -365,21 +398,24 @@ void setup() {
 }
 
 void loop() {
-  // hasClient() flips false as soon as the RFCOMM socket goes away, which is
-  // the Bluetooth equivalent of the old client.connected() check. Drop the
-  // motors before doing anything else so a phone that walks out of range never
-  // leaves the robot driving.
+  // hasClient() flips false as soon as the RFCOMM socket goes away. A phone
+  // that walks out of range must stop phone-driven motion immediately, but it
+  // must not stop the Pi: the Pi drives over the USB serial link and its own
+  // 600 ms command timeout is the safety net there.
   if (!serialBt.hasClient()) {
-    stopForSafety("app disconnected");
     // The relay is as dangerous as a spinning wheel to whoever is standing
-    // next to the robot, so a dead phone link drops it too. The guard keeps
-    // the [relay] log off the every-loop path.
-    if (relayOn) {
+    // next to the robot, so a dead phone link drops it too. While the Pi is
+    // driving over USB it resends "Y1" every 200 ms; keep the relay closed
+    // only while that keep-alive is fresh, so a dead Pi still drops it.
+    const bool usbCommandFresh =
+        lastCommandSource == CommandSource::usb &&
+        millis() - lastCommandMs <= COMMAND_TIMEOUT_MS;
+    if (relayOn && !usbCommandFresh) {
       setRelay(false);
     }
-    announceLink();
-    delay(20);
-    return;
+    if (lastCommandSource == CommandSource::bluetooth) {
+      stopForSafety("app disconnected");
+    }
   }
 
   if (motorsRunning && millis() - lastCommandMs > COMMAND_TIMEOUT_MS) {
